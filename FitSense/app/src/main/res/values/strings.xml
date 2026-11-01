@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FitSense</string>
+    <string name="commit_routine_btn">Commit Routine</string>
+</resources>
