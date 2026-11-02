@@ -6,15 +6,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
     tools:context=".MainActivity">
 
-
-    <Button
+    <TextView
+        android:id="@+id/tv_contador_saltos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        tools:text="Saltos: 0"/>
+
+    <TextView
+        android:id="@+id/tv_contador_flexiones"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="48dp"
+        tools:text="Flexiones: 0"/>
+
+    <Button
+        android:id="@+id/btn_start_saltos"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="@string/btn_start_saltos"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btn_start_flexiones"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="@string/btn_start_flexiones"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
         android:id="@+id/btn_publish_rutine"
-        android:text="@string/commit_routine_btn"/>
-
-
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="@string/commit_routine_btn"
+        android:backgroundTint="@android:color/holo_red_dark"/>
 
 </LinearLayout>
