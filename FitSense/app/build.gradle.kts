@@ -9,7 +9,9 @@ android {
     compileSdk {
         version = release(37)
     }
-
+    buildFeatures {
+        viewBinding = true
+    }
     defaultConfig {
         applicationId = "es.udc.psi_2025_26.FitSense"
         minSdk = 26
