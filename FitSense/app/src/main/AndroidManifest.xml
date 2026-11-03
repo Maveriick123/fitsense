@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- PERMISOS DE PABLO (Sensores y Notificaciones) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,28 +18,32 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FitSense">
 
-        <!-- Schermata di avvio principale: LoginActivity -->
+        <!-- Schermata di avvio principale: LoginActivity (De tu compañero) -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Schermata delle Routine -->
+        <!-- Schermata delle Routine (De tu compañero) -->
         <activity
             android:name=".RoutinesActivity"
             android:exported="false" />
 
-        <!-- MainActivity -->
+        <!-- MainActivity (Tu pantalla de ejercicio) -->
         <activity
             android:name=".MainActivity"
             android:exported="false" />
 
-    </application>
+        <!-- SERVICIO DE PABLO -->
+        <service
+            android:name=".JumpService"
+            android:exported="false"
+            android:foregroundServiceType="health" />
 
+    </application>
 </manifest>

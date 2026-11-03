@@ -1,6 +1,16 @@
 <resources>
     <string name="app_name">FitSense</string>
+    <string name="commit_routine_btn">Stop y Guardar Rutina</string>
+
+    <string name="btn_start_saltos">Iniciar Saltos</string>
+    <string name="btn_start_flexiones">Iniciar Flexiones</string>
+    <string name="tv_saltos_default">Saltos: %1$d</string>
+    <string name="tv_flexiones_default">Flexiones: %1$d</string>
+
+    <string name="channel_id">fitsense_channel</string>
+    <string name="channel_name">Entrenamiento FitSense</string>
+    <string name="channel_desc">Notificaciones activas de rutinas</string>
+    <string name="notif_title">Rutina en curso</string>
     <string name="login">Login</string>
     <string name="register">Register</string>
-    <string name="commit_routine_btn">Commit Routine</string>
 </resources>
