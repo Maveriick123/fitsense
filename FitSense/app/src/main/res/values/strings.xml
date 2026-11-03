@@ -13,4 +13,11 @@
     <string name="notif_title">Rutina en curso</string>
     <string name="login">Login</string>
     <string name="register">Register</string>
+    <string name="permiso_denegado">Permiso Denegado</string>
+    <string name="numero_repeticiones">\"Difficoltà: \"</string>
+    <string name="acceso_exitoso">Accesso riuscito!</string>
+    <string name="error_inicio_sesion">"Errore: "</string>
+    <string name="usuario_requerido">\"Inserisci email e password\"</string>
+    <string name="error_general">\"Error: \"</string>
+    <string name="log_out">\"Logged out\"</string>
 </resources>

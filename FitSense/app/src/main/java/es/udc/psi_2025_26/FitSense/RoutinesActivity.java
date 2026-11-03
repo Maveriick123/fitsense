@@ -1,16 +1,17 @@
 package es.udc.psi_2025_26.FitSense;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -21,18 +22,25 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.udc.psi_2025_26.FitSense.databinding.ActivityRoutinesBinding;
+
 public class RoutinesActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerView;
     private RoutineAdapter adapter;
     private List<RoutineModel> routineList;
     private AuthManager authManager;
     private DatabaseManager dbManager;
 
+    private ActivityRoutinesBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_routines);
+
+        binding = ActivityRoutinesBinding.inflate(getLayoutInflater());
+        View view = binding.getRoot();
+        setContentView(view);
+        //setContentView(R.layout.activity_routines);
 
         // Inizializzazione dei gestori backend
         authManager = new AuthManager();
@@ -40,10 +48,9 @@ public class RoutinesActivity extends AppCompatActivity {
 
         // Inizializzazione della RecyclerView
         routineList = new ArrayList<>();
-        recyclerView = findViewById(R.id.recyclerViewRoutines);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new RoutineAdapter(routineList);
-        recyclerView.setAdapter(adapter);
+        binding.recyclerViewRoutines.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new RoutineAdapter(routineList, getString(R.string.numero_repeticiones));
+        binding.recyclerViewRoutines.setAdapter(adapter);
 
         // Avvio dell'ascolto Firebase
         collegaDatabase();
@@ -68,7 +75,7 @@ public class RoutinesActivity extends AppCompatActivity {
                 if (ejercicio != null && reps != null) {
                     RoutineModel routine = new RoutineModel(ejercicio, reps + " reps");
                     routineList.add(routine);
-                    adapter.notifyItemInserted(routineList.size() - 1);
+                    adapter.notifyItemInserted(routineList.size()-1);
                 }
             }
 
@@ -78,7 +85,7 @@ public class RoutinesActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(RoutinesActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(RoutinesActivity.this, getString(R.string.error_general) + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -91,14 +98,10 @@ public class RoutinesActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-
-        if (id == R.id.action_login || id == R.id.action_register) {
-            startActivity(new Intent(this, LoginActivity.class));
-            return true;
-        } else if (id == R.id.action_logout) {
+        if (id == R.id.action_logout) {
             // Logout diretto con Firebase
             FirebaseAuth.getInstance().signOut();
-            Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.log_out, Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
@@ -107,6 +110,7 @@ public class RoutinesActivity extends AppCompatActivity {
         } else if (id == R.id.action_new_routine) {
             // CONEXIÓN CON EL CÓDIGO DE PABLO
             Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(MainActivity.USER_ID, authManager.getCurrentUserId());
             startActivity(intent);
             return true;
         }

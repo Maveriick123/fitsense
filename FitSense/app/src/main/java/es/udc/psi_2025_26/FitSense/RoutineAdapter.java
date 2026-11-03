@@ -15,21 +15,24 @@ public class RoutineAdapter extends RecyclerView.Adapter<RoutineAdapter.RoutineV
 
     // Lista che conterrà i modelli delle routine
     private List<RoutineModel> routines = new ArrayList<>();
+    private String guiMsgReps;
 
     // Costruttore vuoto
     public RoutineAdapter() {
     }
 
     // Costruttore che accetta subito una lista
-    public RoutineAdapter(List<RoutineModel> routines) {
+    public RoutineAdapter(List<RoutineModel> routines, String guiMsgReps) {
+
         this.routines = routines;
+        this.guiMsgReps = guiMsgReps;
     }
 
     // Metodo per aggiornare la lista quando arrivano dati da Firebase
     public void updateData(List<RoutineModel> newRoutines) {
         this.routines.clear();
         this.routines.addAll(newRoutines);
-        notifyDataSetChanged();
+        notifyItemRangeChanged(0, newRoutines.size());
     }
 
     @NonNull
@@ -48,7 +51,8 @@ public class RoutineAdapter extends RecyclerView.Adapter<RoutineAdapter.RoutineV
 
         // Compiliamo le TextView con i dati del modello
         holder.tvRoutineName.setText(routine.getName());
-        holder.tvRoutineDifficulty.setText("Difficoltà: " + routine.getDifficulty());
+        String msg = guiMsgReps + routine.getDifficulty();
+        holder.tvRoutineDifficulty.setText(msg);
     }
 
     @Override

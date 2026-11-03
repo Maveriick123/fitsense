@@ -32,7 +32,7 @@ public class LoginActivity extends AppCompatActivity {
                 authManager.iniciarSesion(email, password, new AuthManager.AuthCallback() {
                     @Override
                     public void onSuccess(String userId) {
-                        Toast.makeText(LoginActivity.this, "Accesso riuscito!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, R.string.acceso_exitoso, Toast.LENGTH_SHORT).show();
 
                         // Passa alla schermata delle routine
                         Intent intent = new Intent(LoginActivity.this, RoutinesActivity.class);
@@ -42,12 +42,12 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(String errorMessage) {
-                        Toast.makeText(LoginActivity.this, "Errore: " + errorMessage, Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, getString(R.string.error_inicio_sesion) + errorMessage, Toast.LENGTH_LONG).show();
                     }
                 });
 
             } else {
-                Toast.makeText(this, "Inserisci email e password", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.usuario_requerido, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
 
             if (!email.isEmpty() && !password.isEmpty()) {
                 // Daniel si è dimenticato di implementare questo metodo in AuthManager!
-                Toast.makeText(this, "Avvisa Daniel: Manca il metodo per registrarsi in AuthManager!", Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Avvisa Daniel: Manca il metodo per registrarsi in AuthManager!", Toast.LENGTH_LONG).show();
 
                 /* Il codice futuro sarà simile a questo:
                 authManager.registrarUsuario(email, password, new AuthManager.AuthCallback() {
@@ -68,8 +68,25 @@ public class LoginActivity extends AppCompatActivity {
                     public void onFailure(String errorMessage) { ... }
                 });
                 */
+
+                authManager.registrar(email, password, new AuthManager.AuthCallback() {
+                    @Override
+                    public void onSuccess(String userId) {
+                        Toast.makeText(getApplicationContext(), R.string.acceso_exitoso, Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(LoginActivity.this, RoutinesActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {
+                        // Si ocurre un error (ej. email ya en uso, contraseña débil, sin internet)
+                        Toast.makeText(getApplicationContext(), R.string.error_general + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
             } else {
-                Toast.makeText(this, "Inserisci email e password", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.usuario_requerido, Toast.LENGTH_SHORT).show();
             }
         });
     }

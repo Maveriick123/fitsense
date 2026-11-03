@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = "_TAG";
 
+    public static final String USER_ID = "es.udc.psi_2025_26.FitSense.USER_ID";
+
     private ActivityMainBinding binding;
     private DatabaseManager dbManager;
     private AuthManager authManager;
@@ -46,19 +48,19 @@ public class MainActivity extends AppCompatActivity {
     // --- PERMISOS INYECTADOS ---
     private final ActivityResultLauncher<String[]> requestPermissionsLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-                Boolean notifGranted = result.getOrDefault(Manifest.permission.POST_NOTIFICATIONS, false);
-                Boolean activityGranted = result.getOrDefault(Manifest.permission.ACTIVITY_RECOGNITION, false);
-                if (!notifGranted || !activityGranted) {
-                    Toast.makeText(this, "Permisos necesarios para el conteo.", Toast.LENGTH_LONG).show();
-                }
+                result.getOrDefault(Manifest.permission.POST_NOTIFICATIONS, false);
+                result.getOrDefault(Manifest.permission.ACTIVITY_RECOGNITION, false);
             });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        View view = binding.getRoot();
+        setContentView(view);
+        //setContentView(binding.getRoot());
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -70,20 +72,14 @@ public class MainActivity extends AppCompatActivity {
         dbManager = new DatabaseManager();
         authManager = new AuthManager();
 
-        String currentUserId = authManager.getCurrentUserId();
-        if (currentUserId == null) {
-            authManager.iniciarSesion("dani.quingra2005@gmail.com", "1234567", new AuthManager.AuthCallback() {
-                @Override
-                public void onSuccess(String userId) {
-                    dbManager.escucharRutina(userId);
-                }
-                @Override
-                public void onFailure(String errorMessage) {
-                    Log.d(TAG, "Error: " + errorMessage);
-                }
-            });
-        } else {
-            dbManager.escucharRutina(currentUserId);
+        Bundle bundle = getIntent().getExtras();
+        if(bundle!=null){
+            String currentUserId = bundle.getString(USER_ID);
+            if(currentUserId == null){
+                Toast.makeText(getApplicationContext(), R.string.error_general, Toast.LENGTH_SHORT).show();
+            }else{
+                dbManager.escucharRutina(currentUserId);
+            }
         }
 
         // Inicializar UI Sensores
@@ -153,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
             if (hasNotif && hasActivity) {
                 iniciarServicioRutina(tipoEjercicio);
             } else {
-                Toast.makeText(this, "Otorgue permisos en ajustes.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.permiso_denegado, Toast.LENGTH_LONG).show();
             }
         } else {
             iniciarServicioRutina(tipoEjercicio);

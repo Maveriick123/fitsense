@@ -32,6 +32,19 @@ public class AuthManager {
                 });
     }
 
+    // Función para registrar un nuevo usuario con email y contraseña
+    public void registrar(String email, String password, AuthCallback callback) {
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && mAuth.getCurrentUser() != null) {
+                        callback.onSuccess(mAuth.getCurrentUser().getUid());
+                    } else {
+                        String error = task.getException() != null ? task.getException().getMessage() : "Error en el registro";
+                        callback.onFailure(error);
+                    }
+                });
+    }
+
     // Interfaz para la respuesta asíncrona de firebase-auth
     // La clase que llame a iniciarSesión deberá implementar estos dos métodos
     public interface AuthCallback {
