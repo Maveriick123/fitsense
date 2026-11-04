@@ -1,4 +1,5 @@
 package es.udc.psi_2025_26.FitSense;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -40,16 +41,17 @@ public class RoutinesActivity extends AppCompatActivity {
         binding = ActivityRoutinesBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
         setContentView(view);
-        //setContentView(R.layout.activity_routines);
 
-        // Inizializzazione dei gestori backend
-        authManager = new AuthManager();
-        dbManager = new DatabaseManager();
+        // 1. Inizializzazione dei gestori backend con el contexto (this)
+        authManager = new AuthManager(this);
+        dbManager = new DatabaseManager(this);
 
         // Inizializzazione della RecyclerView
         routineList = new ArrayList<>();
         binding.recyclerViewRoutines.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new RoutineAdapter(routineList, getString(R.string.numero_repeticiones));
+
+        // 2. Uso del constructor limpio del Adapter (sin strings)
+        adapter = new RoutineAdapter(routineList);
         binding.recyclerViewRoutines.setAdapter(adapter);
 
         // Avvio dell'ascolto Firebase
@@ -61,10 +63,10 @@ public class RoutinesActivity extends AppCompatActivity {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         String currentUserId = currentUser != null ? currentUser.getUid() : "";
 
-        // 1. Chiamata al metodo di Daniel
+        // Chiamata al metodo di Daniel
         dbManager.escucharRutina(currentUserId);
 
-        // 2. Popolamento automatico della RecyclerView
+        // Popolamento automatico della RecyclerView
         DatabaseReference routinesRef = FirebaseDatabase.getInstance().getReference(DatabaseManager.NODE_ROUTINE);
         routinesRef.addChildEventListener(new ChildEventListener() {
             @Override
@@ -73,7 +75,10 @@ public class RoutinesActivity extends AppCompatActivity {
                 Long reps = snapshot.child(DatabaseManager.KEY_REPS_CAMBER).getValue(Long.class);
 
                 if (ejercicio != null && reps != null) {
-                    RoutineModel routine = new RoutineModel(ejercicio, reps + " reps");
+                    // 3. Uso del string resource para el sufijo " reps"
+                    String repsString = reps + getString(R.string.unidad_reps);
+                    RoutineModel routine = new RoutineModel(ejercicio, repsString);
+
                     routineList.add(routine);
                     adapter.notifyItemInserted(routineList.size()-1);
                 }
@@ -89,6 +94,7 @@ public class RoutinesActivity extends AppCompatActivity {
             }
         });
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.options_menu, menu);

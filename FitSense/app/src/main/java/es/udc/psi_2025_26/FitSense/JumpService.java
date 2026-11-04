@@ -1,6 +1,5 @@
 package es.udc.psi_2025_26.FitSense;
 
-
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -142,6 +141,9 @@ public class JumpService extends Service implements SensorEventListener {
         Intent broadcastIntent = new Intent(ACTION_UPDATE_COUNT);
         broadcastIntent.putExtra(EXTRA_COUNT_SALTOS, jumpCount);
         broadcastIntent.putExtra(EXTRA_COUNT_FLEXIONES, flexionesCount);
+
+        broadcastIntent.setPackage(getPackageName());
+
         sendBroadcast(broadcastIntent);
     }
 
@@ -150,11 +152,13 @@ public class JumpService extends Service implements SensorEventListener {
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
+        // Extracción de strings posicionales dependiendo del ejercicio activo
         String textoActivo = (activeExercise == TYPE_SALTOS) ?
-                "Contando saltos: " + jumpCount :
-                "Contando flexiones: " + flexionesCount;
+                getString(R.string.notif_contando_saltos, jumpCount) :
+                getString(R.string.notif_contando_flexiones, flexionesCount);
 
-        return new NotificationCompat.Builder(this, "fitsense_channel")
+        // Se usa getString para el ID del canal
+        return new NotificationCompat.Builder(this, getString(R.string.channel_id))
                 .setContentTitle(getString(R.string.notif_title))
                 .setContentText(textoActivo)
                 .setSmallIcon(android.R.drawable.ic_menu_directions)
@@ -165,7 +169,12 @@ public class JumpService extends Service implements SensorEventListener {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("fitsense_channel", "Entrenamiento FitSense", NotificationManager.IMPORTANCE_LOW);
+            // Se usa getString para el ID y el nombre visual del canal
+            NotificationChannel channel = new NotificationChannel(
+                    getString(R.string.channel_id),
+                    getString(R.string.channel_name),
+                    NotificationManager.IMPORTANCE_LOW
+            );
             getSystemService(NotificationManager.class).createNotificationChannel(channel);
         }
     }

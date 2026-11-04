@@ -11,13 +11,37 @@
     <string name="channel_name">Entrenamiento FitSense</string>
     <string name="channel_desc">Notificaciones activas de rutinas</string>
     <string name="notif_title">Rutina en curso</string>
-    <string name="login">Login</string>
-    <string name="register">Register</string>
+
+    <!-- Textos de botones y menús traducidos -->
+    <string name="login">Iniciar sesión</string>
+    <string name="register">Registrarse</string>
+
     <string name="permiso_denegado">Permiso Denegado</string>
-    <string name="numero_repeticiones">\"Difficoltà: \"</string>
-    <string name="acceso_exitoso">Accesso riuscito!</string>
-    <string name="error_inicio_sesion">"Errore: "</string>
-    <string name="usuario_requerido">\"Inserisci email e password\"</string>
-    <string name="error_general">\"Error: \"</string>
-    <string name="log_out">\"Logged out\"</string>
+
+    <!-- Textos italianos traducidos y comillas escapadas eliminadas -->
+    <string name="numero_repeticiones">Dificultad: </string>
+    <string name="acceso_exitoso">¡Acceso exitoso!</string>
+    <string name="error_inicio_sesion">Error: </string>
+    <string name="usuario_requerido">Introduce email y contraseña</string>
+    <string name="error_general">Error: </string>
+
+    <string name="error_registro">Error en el registro</string>
+
+    <!-- Textos en inglés traducidos y comillas escapadas eliminadas -->
+    <string name="log_out">Sesión cerrada</string>
+
+    <string name="log_rutina_completada">¡Un usuario completó %1$d de %2$s</string>
+    <string name="log_error_bd">Error al escuchar la base de datos: %1$s</string>
+    <string name="notif_contando_saltos">Contando saltos: %1$d</string>
+    <string name="notif_contando_flexiones">Contando flexiones: %1$d</string>
+    <string name="rutinas_guardadas">Rutinas guardadas en la nube</string>
+    <string name="falta_sesion">Falta inicio de sesión</string>
+    <string name="unidad_reps"> reps</string>
+
+    <!-- Hints de los EditText traducidos -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Contraseña</string>
+
+    <string name="menu_nueva_rutina">Nueva Rutina</string>
+    <string name="menu_logout">Cerrar sesión</string>
 </resources>

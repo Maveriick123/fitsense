@@ -15,17 +15,14 @@ public class RoutineAdapter extends RecyclerView.Adapter<RoutineAdapter.RoutineV
 
     // Lista che conterrà i modelli delle routine
     private List<RoutineModel> routines = new ArrayList<>();
-    private String guiMsgReps;
 
     // Costruttore vuoto
     public RoutineAdapter() {
     }
 
-    // Costruttore che accetta subito una lista
-    public RoutineAdapter(List<RoutineModel> routines, String guiMsgReps) {
-
+    // Costruttore che accetta solo la lista (más limpio)
+    public RoutineAdapter(List<RoutineModel> routines) {
         this.routines = routines;
-        this.guiMsgReps = guiMsgReps;
     }
 
     // Metodo per aggiornare la lista quando arrivano dati da Firebase
@@ -38,7 +35,6 @@ public class RoutineAdapter extends RecyclerView.Adapter<RoutineAdapter.RoutineV
     @NonNull
     @Override
     public RoutineViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Assicurati che il tuo file XML per la singola riga si chiami 'item_routine.xml'
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_routine, parent, false);
         return new RoutineViewHolder(view);
@@ -46,13 +42,13 @@ public class RoutineAdapter extends RecyclerView.Adapter<RoutineAdapter.RoutineV
 
     @Override
     public void onBindViewHolder(@NonNull RoutineViewHolder holder, int position) {
-        // Recuperiamo la routine in questa posizione
         RoutineModel routine = routines.get(position);
 
-        // Compiliamo le TextView con i dati del modello
         holder.tvRoutineName.setText(routine.getName());
-        String msg = guiMsgReps + routine.getDifficulty();
-        holder.tvRoutineDifficulty.setText(msg);
+
+        // Obtenemos el texto directamente desde el contexto de la vista
+        String prefix = holder.itemView.getContext().getString(R.string.numero_repeticiones);
+        holder.tvRoutineDifficulty.setText(prefix + routine.getDifficulty());
     }
 
     @Override
@@ -67,7 +63,6 @@ public class RoutineAdapter extends RecyclerView.Adapter<RoutineAdapter.RoutineV
 
         public RoutineViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Colleghiamo le TextView agli ID presenti in item_routine.xml
             tvRoutineName = itemView.findViewById(R.id.tvRoutineName);
             tvRoutineDifficulty = itemView.findViewById(R.id.tvRoutineDifficulty);
         }

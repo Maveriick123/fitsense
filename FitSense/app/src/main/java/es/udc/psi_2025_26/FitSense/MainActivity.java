@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
         setContentView(view);
-        //setContentView(binding.getRoot());
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -68,9 +67,9 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Inicializar Firebase
-        dbManager = new DatabaseManager();
-        authManager = new AuthManager();
+        // 1. Inicializar Firebase con el contexto actual
+        dbManager = new DatabaseManager(this);
+        authManager = new AuthManager(this);
 
         Bundle bundle = getIntent().getExtras();
         if(bundle!=null){
@@ -94,21 +93,23 @@ public class MainActivity extends AppCompatActivity {
 
             String userId = authManager.getCurrentUserId();
             if (userId != null) {
-                // Subir rutinas detectadas
+                // Subir rutinas detectadas (textos hardcodeados por integridad de base de datos)
                 if (JumpService.jumpCount > 0) {
                     dbManager.registrarRutina(userId, "Saltos", JumpService.jumpCount);
                 }
                 if (JumpService.flexionesCount > 0) {
                     dbManager.registrarRutina(userId, "Flexiones", JumpService.flexionesCount);
                 }
-                Toast.makeText(this, "Rutinas guardadas en la nube", Toast.LENGTH_SHORT).show();
+
+                // 2. Uso de R.string para los Toasts
+                Toast.makeText(this, R.string.rutinas_guardadas, Toast.LENGTH_SHORT).show();
 
                 // Reiniciar interfaz para el próximo set
                 JumpService.jumpCount = 0;
                 JumpService.flexionesCount = 0;
                 actualizarPantalla(0, 0);
             } else {
-                Toast.makeText(this, "Falta inicio de sesión", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.falta_sesion, Toast.LENGTH_SHORT).show();
             }
         });
     }
