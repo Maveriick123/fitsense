@@ -138,7 +138,7 @@ Al cambiar de móvil hay que volver a calibrar.
 
 1. Clonar el repositorio y cambiar a la rama `calibracion_por_usuario`
 2. Abrir la carpeta `FitSense/` con Android Studio.
-3. Comprobar que existe el archivo `app/gooto de Firebase.
+3. Comprobar que existe el archivo `app/google-services.json` del proyecto de Firebase.
 4. Ejecutar en un dispositivo físico. Un emulador no tiene acelerómetro real.
 
 **Requisitos:** Android 8.0 (API 26) o superior.
