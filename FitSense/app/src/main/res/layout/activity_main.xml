@@ -1,52 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp"
+    android:fillViewport="true"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/tv_contador_saltos"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"
-        tools:text="Saltos: 0"/>
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp">
 
-    <TextView
-        android:id="@+id/tv_contador_flexiones"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="48dp"
-        tools:text="Flexiones: 0"/>
+        <!-- Saltos -->
+        <TextView
+            android:id="@+id/tv_contador_saltos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            tools:text="Saltos: 0" />
 
-    <Button
-        android:id="@+id/btn_start_saltos"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="@string/btn_start_saltos"
-        android:layout_marginBottom="16dp"/>
+        <Button
+            android:id="@+id/btn_start_saltos"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"
+            android:text="@string/btn_start_saltos" />
 
-    <Button
-        android:id="@+id/btn_start_flexiones"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="@string/btn_start_flexiones"
-        android:layout_marginBottom="16dp"/>
+        <!-- Flexiones -->
+        <TextView
+            android:id="@+id/tv_contador_flexiones"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            tools:text="Flexiones: 0" />
 
-    <Button
-        android:id="@+id/btn_publish_rutine"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="@string/commit_routine_btn"
-        android:backgroundTint="@android:color/holo_red_dark"/>
+        <Button
+            android:id="@+id/btn_start_flexiones"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"
+            android:text="@string/btn_start_flexiones" />
 
-</LinearLayout>
+        <!-- Pasos -->
+        <TextView
+            android:id="@+id/tv_contador_pasos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            tools:text="Pasos: 0" />
+
+        <Button
+            android:id="@+id/btn_start_pasos"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"
+            android:text="@string/btn_start_pasos" />
+
+        <!-- Dominadas -->
+        <TextView
+            android:id="@+id/tv_contador_dominadas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            tools:text="Dominadas: 0" />
+
+        <Button
+            android:id="@+id/btn_start_dominadas"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="32dp"
+            android:text="@string/btn_start_dominadas" />
+
+        <Button
+            android:id="@+id/btn_autocalibrar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/btn_autocalibrar" />
+
+        <Button
+            android:id="@+id/btn_publish_rutine"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:text="@string/commit_routine_btn" />
+
+    </LinearLayout>
+</ScrollView>

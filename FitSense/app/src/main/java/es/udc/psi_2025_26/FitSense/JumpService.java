@@ -12,155 +12,332 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.Arrays;
+
+import es.udc.psi_2025_26.FitSense.detection.DetectorParams;
+import es.udc.psi_2025_26.FitSense.detection.ExponentialSmoother;
+import es.udc.psi_2025_26.FitSense.detection.QuietDetector;
+import es.udc.psi_2025_26.FitSense.detection.RepetitionDetector;
+
+/**
+ * Servicio en primer plano que lee el acelerómetro y cuenta repeticiones.
+ *
+ * Tiene dos modos:
+ *  - ENTRENAMIENTO: cuenta repeticiones del ejercicio activo con los parámetros calibrados
+ *    (o los de por defecto) y las notifica a la UI por Broadcast.
+ *  - CALIBRACIÓN: tras una cuenta atrás, graba la señal cruda en {@link CalibrationRepository}
+ *    con unos parámetros de prueba y se detiene sola cuando el usuario se queda quieto.
+ *
+ * La calibración se hace en este mismo servicio (y no con un listener en la Activity) para que
+ * las condiciones de captura sean IDÉNTICAS a las del entrenamiento real: mismo sensor, misma
+ * frecuencia, mismo filtrado y funcionando con la pantalla bloqueada y el móvil en el bolsillo.
+ * Una Activity deja de recibir eventos del sensor en cuanto se bloquea la pantalla.
+ */
 public class JumpService extends Service implements SensorEventListener {
 
     private static final String TAG = "_TAG_JumpService";
+    private static final int NOTIFICATION_ID = 1;
 
-    // Constantes de comunicación
+    // --- Contrato de comunicación ---
     public static final String ACTION_UPDATE_COUNT = "es.udc.psi_2025_26.FitSense.UPDATE_COUNT";
-    public static final String EXTRA_COUNT_SALTOS = "JUMP_COUNT";
-    public static final String EXTRA_COUNT_FLEXIONES = "FLEX_COUNT";
-
-    // Tipos de ejercicio
+    /** int[] con el contador de cada ejercicio, indexado por {@link ExerciseType#ordinal()}. */
+    public static final String EXTRA_COUNTS = "COUNTS";
+    /** {@link ExerciseType#name()} del ejercicio a contar o calibrar. */
     public static final String EXTRA_EXERCISE_TYPE = "EXERCISE_TYPE";
-    public static final int TYPE_SALTOS = 1;
-    public static final int TYPE_FLEXIONES = 2;
+    public static final String EXTRA_MODE = "MODE";
+    public static final int MODE_WORKOUT = 0;
+    public static final int MODE_CALIBRATION = 1;
+    /** Parámetros de prueba para el modo calibración. */
+    public static final String EXTRA_THRESHOLD = "THRESHOLD";
+    public static final String EXTRA_MIN_INTERVAL_MS = "MIN_INTERVAL_MS";
+
+    // --- Calibración ---
+    /** Tiempo para guardar el móvil en el bolsillo antes de empezar a grabar. */
+    static final int CALIBRATION_COUNTDOWN_S = 5;
+    /** Fin automático de la serie: 4 s por debajo de 0.6 m/s² tras haber superado 1.5 m/s². */
+    private static final float QUIET_LEVEL = 0.6f;
+    private static final float ACTIVE_LEVEL = 1.5f;
+    private static final long QUIET_DURATION_MS = 4000;
+    private static final float QUIET_TAU_S = 0.3f;
+
+    /** Constante de tiempo para estimar la gravedad si no existe TYPE_LINEAR_ACCELERATION. */
+    private static final float GRAVITY_TAU_S = 0.4f;
+
+    // --- Estado compartido con la UI (mismo proceso) ---
+    private static final int[] counts = new int[ExerciseType.values().length];
+    private static volatile boolean workoutRunning = false;
+
+    public static int[] getCounts() {
+        return counts.clone();
+    }
+
+    public static void resetCounts() {
+        Arrays.fill(counts, 0);
+    }
+
+    public static boolean isWorkoutRunning() {
+        return workoutRunning;
+    }
+
+    // --- Estado interno ---
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final CalibrationRepository repository = CalibrationRepository.getInstance();
+    private CalibrationStore calibrationStore;
 
     private SensorManager sensorManager;
-    private Sensor linearAccelSensor;
+    private Sensor sensor;
+    private boolean usingLinearAcceleration;
+    private final ExponentialSmoother[] gravity = new ExponentialSmoother[3];
 
-    // Estado interno
-    private int activeExercise = TYPE_SALTOS;
-    private boolean isTracking = false;
-    public static int jumpCount = 0;
-    public static int flexionesCount = 0;
-
-    private long lastJumpTime = 0;
-    private long lastFlexionTime = 0;
-
-    // Calibración independiente
-    private static final float JUMP_THRESHOLD = 13.0f;
-    private static final long JUMP_COOLDOWN_MS = 650;
-
-    private static final float FLEXION_THRESHOLD = 2.5f; // Movimiento más suave
-    private static final long FLEXION_COOLDOWN_MS = 1400; // Repeticiones más lentas
+    private boolean foregroundStarted = false;
+    private boolean listening = false;
+    private boolean calibrating = false;
+    private ExerciseType activeExercise = ExerciseType.SALTOS;
+    private RepetitionDetector detector;
+    private QuietDetector quietDetector;
+    private ToneGenerator toneGenerator;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        calibrationStore = new CalibrationStore(this);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
-            linearAccelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+            sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+            usingLinearAcceleration = sensor != null;
+            if (sensor == null) {
+                // Algunos móviles baratos no tienen el sensor virtual de aceleración lineal:
+                // usamos el acelerómetro y restamos la gravedad con un filtro paso bajo.
+                sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+                for (int i = 0; i < 3; i++) gravity[i] = new ExponentialSmoother(GRAVITY_TAU_S);
+            }
         }
         createNotificationChannel();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // Leemos qué botón pulsó el usuario
-        int reqType = intent.getIntExtra(EXTRA_EXERCISE_TYPE, TYPE_SALTOS);
-
-        // Si el servicio arranca por primera vez, ponemos a 0 y encendemos el sensor
-        if (!isTracking) {
-            jumpCount = 0;
-            flexionesCount = 0;
-            isTracking = true;
-
-            NotificationCompat.Builder builder = createNotificationBuilder();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(1, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH);
-            } else {
-                startForeground(1, builder.build());
-            }
-
-            if (linearAccelSensor != null) {
-                sensorManager.registerListener(this, linearAccelSensor, SensorManager.SENSOR_DELAY_NORMAL);
-            }
+        if (intent == null) {
+            stopSelf();
+            return START_NOT_STICKY;
         }
+        ensureForeground();
 
-        // Actualizamos el ejercicio activo sin borrar los datos anteriores
-        activeExercise = reqType;
-        Log.d(TAG, "Cambiando a modo ejercicio: " + activeExercise);
+        ExerciseType type = ExerciseType.fromName(
+                intent.getStringExtra(EXTRA_EXERCISE_TYPE), ExerciseType.SALTOS);
 
-        actualizarNotificacion();
-        enviarBroadcastUI();
-
+        if (intent.getIntExtra(EXTRA_MODE, MODE_WORKOUT) == MODE_CALIBRATION) {
+            DetectorParams params = new DetectorParams(
+                    intent.getFloatExtra(EXTRA_THRESHOLD, type.defaultParams.threshold),
+                    intent.getLongExtra(EXTRA_MIN_INTERVAL_MS, type.defaultParams.minIntervalMs));
+            startCalibration(type, params);
+        } else {
+            startWorkout(type);
+        }
         return START_NOT_STICKY;
     }
 
+    // ------------------------------------------------------------------ Entrenamiento
+
+    private void startWorkout(ExerciseType type) {
+        if (calibrating) {
+            cancelCalibration();
+        }
+        if (!workoutRunning) {
+            resetCounts();
+            workoutRunning = true;
+        }
+        // Al cambiar de ejercicio se conservan los contadores de los demás, como antes.
+        activeExercise = type;
+        detector = new RepetitionDetector(calibrationStore.get(type), type.smoothingTauSec);
+        Log.d(TAG, "Modo entrenamiento: " + type + " con " + calibrationStore.get(type));
+
+        startListening();
+        updateNotification();
+        sendCountsBroadcast();
+    }
+
+    // ------------------------------------------------------------------ Calibración
+
+    private void startCalibration(ExerciseType type, DetectorParams params) {
+        if (workoutRunning) {
+            // La UI no lo permite; defensa por si acaso: no mezclamos una rutina con una calibración.
+            Log.w(TAG, "Calibración ignorada: hay una rutina en curso");
+            return;
+        }
+        if (sensor == null) {
+            Log.e(TAG, "El dispositivo no tiene acelerómetro");
+            repository.reset();
+            stopSelf();
+            return;
+        }
+        stopListening();
+        handler.removeCallbacksAndMessages(null);
+
+        calibrating = true;
+        activeExercise = type;
+        detector = new RepetitionDetector(params, type.smoothingTauSec);
+        quietDetector = new QuietDetector(QUIET_LEVEL, ACTIVE_LEVEL, QUIET_DURATION_MS, QUIET_TAU_S);
+        Log.d(TAG, "Calibrando " + type + " con " + params);
+
+        countdownTick(CALIBRATION_COUNTDOWN_S);
+    }
+
+    private void countdownTick(int secondsLeft) {
+        if (secondsLeft <= 0) {
+            beginRecording();
+            return;
+        }
+        repository.onCountdown(secondsLeft);
+        updateNotification();
+        handler.postDelayed(() -> countdownTick(secondsLeft - 1), 1000);
+    }
+
+    private void beginRecording() {
+        repository.onRecordingStarted();
+        // Aviso sonoro y NO vibración: la vibración la captaría el propio acelerómetro.
+        beep();
+        startListening();
+        updateNotification();
+    }
+
+    private void finishCalibration(long trimFromNs) {
+        stopListening();
+        repository.finish(trimFromNs);
+        beep();
+        stopSelf();
+    }
+
+    private void cancelCalibration() {
+        handler.removeCallbacksAndMessages(null);
+        stopListening();
+        calibrating = false;
+        repository.reset();
+    }
+
+    // ------------------------------------------------------------------ Sensor
+
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (!isTracking || event.sensor.getType() != Sensor.TYPE_LINEAR_ACCELERATION) return;
+        if (!listening) return;
+        // event.timestamp (ns) es el instante real de la muestra, inmune al batching.
+        long timestampNs = event.timestamp;
+        float magnitude = linearMagnitude(event);
 
-        double magnitude = Math.sqrt((event.values[0] * event.values[0]) +
-                (event.values[1] * event.values[1]) +
-                (event.values[2] * event.values[2]));
-        long currentTime = System.currentTimeMillis();
-
-        if (activeExercise == TYPE_SALTOS) {
-            if (magnitude > JUMP_THRESHOLD && (currentTime - lastJumpTime > JUMP_COOLDOWN_MS)) {
-                jumpCount++;
-                lastJumpTime = currentTime;
-                Log.d(TAG, "Salto: " + jumpCount);
-                actualizarNotificacion();
-                enviarBroadcastUI();
+        if (calibrating) {
+            if (repository.getPhase() != CalibrationRepository.Phase.RECORDING) return;
+            repository.onSample(timestampNs, magnitude);
+            if (detector.process(timestampNs, magnitude)) {
+                repository.onRepetition(detector.getCount());
+                updateNotification();
             }
-        } else if (activeExercise == TYPE_FLEXIONES) {
-            if (magnitude > FLEXION_THRESHOLD && (currentTime - lastFlexionTime > FLEXION_COOLDOWN_MS)) {
-                flexionesCount++;
-                lastFlexionTime = currentTime;
-                Log.d(TAG, "Flexion: " + flexionesCount);
-                actualizarNotificacion();
-                enviarBroadcastUI();
+            long quietStart = quietDetector.process(timestampNs, magnitude);
+            if (quietStart != QuietDetector.NOT_FINISHED) {
+                finishCalibration(quietStart);
             }
+        } else if (detector.process(timestampNs, magnitude)) {
+            counts[activeExercise.ordinal()]++;
+            Log.d(TAG, activeExercise + ": " + counts[activeExercise.ordinal()]);
+            updateNotification();
+            sendCountsBroadcast();
         }
     }
 
-    private void actualizarNotificacion() {
-        NotificationCompat.Builder builder = createNotificationBuilder();
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                notificationManager.notify(1, builder.build());
-            }
-        } else {
-            notificationManager.notify(1, builder.build());
+    private float linearMagnitude(SensorEvent event) {
+        float x = event.values[0], y = event.values[1], z = event.values[2];
+        if (!usingLinearAcceleration) {
+            x -= gravity[0].filter(event.timestamp, x);
+            y -= gravity[1].filter(event.timestamp, y);
+            z -= gravity[2].filter(event.timestamp, z);
         }
+        return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
-    private void enviarBroadcastUI() {
+    private void startListening() {
+        if (listening || sensor == null) return;
+        // SENSOR_DELAY_GAME (~50 Hz). Antes se usaba SENSOR_DELAY_NORMAL (~5 Hz): una muestra cada
+        // 200 ms, demasiado lenta para captar el pico de un salto o un paso (duran ~100-200 ms).
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+        listening = true;
+    }
+
+    private void stopListening() {
+        if (!listening) return;
+        sensorManager.unregisterListener(this);
+        listening = false;
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+    // ------------------------------------------------------------------ UI / notificación
+
+    private void sendCountsBroadcast() {
         Intent broadcastIntent = new Intent(ACTION_UPDATE_COUNT);
-        broadcastIntent.putExtra(EXTRA_COUNT_SALTOS, jumpCount);
-        broadcastIntent.putExtra(EXTRA_COUNT_FLEXIONES, flexionesCount);
-
+        broadcastIntent.putExtra(EXTRA_COUNTS, getCounts());
         broadcastIntent.setPackage(getPackageName());
-
         sendBroadcast(broadcastIntent);
     }
 
+    private void ensureForeground() {
+        if (foregroundStarted) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, createNotificationBuilder().build(),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH);
+        } else {
+            startForeground(NOTIFICATION_ID, createNotificationBuilder().build());
+        }
+        foregroundStarted = true;
+    }
+
+    private void updateNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, createNotificationBuilder().build());
+    }
+
     private NotificationCompat.Builder createNotificationBuilder() {
-        Intent intent = new Intent(this, MainActivity.class);
+        Class<?> target = calibrating ? CalibrationActivity.class : MainActivity.class;
+        Intent intent = new Intent(this, target);
+        intent.putExtra(CalibrationActivity.EXTRA_EXERCISE_TYPE, activeExercise.name());
+        // SINGLE_TOP | CLEAR_TOP: vuelve a la pantalla existente en vez de crear otra encima.
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
-        // Extracción de strings posicionales dependiendo del ejercicio activo
-        String textoActivo = (activeExercise == TYPE_SALTOS) ?
-                getString(R.string.notif_contando_saltos, jumpCount) :
-                getString(R.string.notif_contando_flexiones, flexionesCount);
+        String title;
+        String text;
+        String exerciseName = getString(activeExercise.nameRes);
+        if (calibrating) {
+            title = getString(R.string.notif_calib_title);
+            CalibrationRepository.CaptureState s = repository.getState().getValue();
+            text = (s != null && s.phase == CalibrationRepository.Phase.COUNTDOWN)
+                    ? getString(R.string.notif_calib_countdown, exerciseName, s.secondsLeft)
+                    : getString(R.string.notif_calib_recording, exerciseName,
+                            s == null ? 0 : s.liveCount);
+        } else {
+            title = getString(R.string.notif_title);
+            text = getString(activeExercise.notificationRes, counts[activeExercise.ordinal()]);
+        }
 
-        // Se usa getString para el ID del canal
         return new NotificationCompat.Builder(this, getString(R.string.channel_id))
-                .setContentTitle(getString(R.string.notif_title))
-                .setContentText(textoActivo)
+                .setContentTitle(title)
+                .setContentText(text)
                 .setSmallIcon(android.R.drawable.ic_menu_directions)
                 .setContentIntent(pendingIntent)
                 .setOnlyAlertOnce(true)
@@ -169,29 +346,51 @@ public class JumpService extends Service implements SensorEventListener {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Se usa getString para el ID y el nombre visual del canal
             NotificationChannel channel = new NotificationChannel(
                     getString(R.string.channel_id),
                     getString(R.string.channel_name),
-                    NotificationManager.IMPORTANCE_LOW
-            );
+                    NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription(getString(R.string.channel_desc));
             getSystemService(NotificationManager.class).createNotificationChannel(channel);
         }
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+    private void beep() {
+        try {
+            if (toneGenerator == null) {
+                toneGenerator = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+            }
+            toneGenerator.startTone(ToneGenerator.TONE_PROP_BEEP2, 400);
+        } catch (RuntimeException e) {
+            // ToneGenerator puede fallar si el sistema no tiene recursos de audio libres.
+            Log.w(TAG, "No se pudo reproducir el aviso sonoro", e);
+        }
+    }
+
+    // ------------------------------------------------------------------ Ciclo de vida
 
     @Override
     public void onDestroy() {
-        isTracking = false;
-        if (sensorManager != null) {
-            sensorManager.unregisterListener(this);
+        handler.removeCallbacksAndMessages(null);
+        stopListening();
+        if (calibrating && repository.isCapturing()) {
+            // Detenido desde fuera (botón "Detener" o el sistema): cerramos sin recortar.
+            repository.finish(Long.MAX_VALUE);
         }
-        stopForeground(true);
+        calibrating = false;
+        workoutRunning = false;
+        if (toneGenerator != null) {
+            // Se retrasa la liberación para no cortar el pitido final.
+            ToneGenerator tg = toneGenerator;
+            toneGenerator = null;
+            new Handler(Looper.getMainLooper()).postDelayed(tg::release, 600);
+        }
+        stopForeground(STOP_FOREGROUND_REMOVE);
         super.onDestroy();
     }
 
     @Override
-    public IBinder onBind(Intent intent) { return null; }
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 }

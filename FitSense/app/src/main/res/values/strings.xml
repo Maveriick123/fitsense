@@ -4,8 +4,18 @@
 
     <string name="btn_start_saltos">Iniciar Saltos</string>
     <string name="btn_start_flexiones">Iniciar Flexiones</string>
+    <string name="btn_start_pasos">Iniciar Pasos</string>
+    <string name="btn_start_dominadas">Iniciar Dominadas</string>
     <string name="tv_saltos_default">Saltos: %1$d</string>
     <string name="tv_flexiones_default">Flexiones: %1$d</string>
+    <string name="tv_pasos_default">Pasos: %1$d</string>
+    <string name="tv_dominadas_default">Dominadas: %1$d</string>
+
+    <!-- Nombres de ejercicio (UI) -->
+    <string name="ex_saltos">Saltos</string>
+    <string name="ex_flexiones">Flexiones</string>
+    <string name="ex_pasos">Pasos</string>
+    <string name="ex_dominadas">Dominadas</string>
 
     <string name="channel_id">fitsense_channel</string>
     <string name="channel_name">Entrenamiento FitSense</string>
@@ -34,6 +44,11 @@
     <string name="log_error_bd">Error al escuchar la base de datos: %1$s</string>
     <string name="notif_contando_saltos">Contando saltos: %1$d</string>
     <string name="notif_contando_flexiones">Contando flexiones: %1$d</string>
+    <string name="notif_contando_pasos">Contando pasos: %1$d</string>
+    <string name="notif_contando_dominadas">Contando dominadas: %1$d</string>
+    <string name="notif_calib_title">Calibración en curso</string>
+    <string name="notif_calib_countdown">%1$s: empieza en %2$d s</string>
+    <string name="notif_calib_recording">%1$s: detectadas %2$d</string>
     <string name="rutinas_guardadas">Rutinas guardadas en la nube</string>
     <string name="falta_sesion">Falta inicio de sesión</string>
     <string name="unidad_reps"> reps</string>
@@ -44,4 +59,54 @@
 
     <string name="menu_nueva_rutina">Nueva Rutina</string>
     <string name="menu_logout">Cerrar sesión</string>
+
+    <!-- Autocalibración -->
+    <string name="btn_autocalibrar">Autocalibrar</string>
+    <string name="calib_choose_title">¿Qué quieres calibrar?</string>
+    <string name="calib_item_calibrated">%1$s (calibrado)</string>
+    <string name="calib_error_workout_running">Termina y guarda la rutina en curso antes de calibrar</string>
+    <string name="calib_title">Calibrar: %1$s</string>
+    <string name="calib_params">Umbral: %1$.2f m/s² · Intervalo mínimo: %2$d ms (%3$s)</string>
+    <string name="calib_origin_default">valores por defecto</string>
+    <string name="calib_origin_saved">calibración guardada</string>
+    <string name="calib_origin_trial">valores de prueba, sin guardar</string>
+
+    <string name="calib_instr_saltos">Lleva el móvil como lo harás al entrenar (en el bolsillo o en la mano) y salta a la comba a tu ritmo habitual.</string>
+    <string name="calib_instr_flexiones">Guarda el móvil en el bolsillo y haz flexiones a tu ritmo habitual.</string>
+    <string name="calib_instr_pasos">Guarda el móvil en el bolsillo y camina con normalidad contando tus pasos.</string>
+    <string name="calib_instr_dominadas">Guarda el móvil en el bolsillo y haz dominadas a tu ritmo habitual.</string>
+    <string name="calib_instr_general">1. Pulsa Empezar: tendrás 5 segundos para colocar el móvil.\n2. Al oír el pitido, haz entre 10 y 20 repeticiones contándolas tú.\n3. Al terminar, quédate quieto 4 segundos: un segundo pitido indica que la grabación ha acabado y ya puedes coger el móvil.\n4. Introduce cuántas hiciste realmente y la app ajustará la detección.</string>
+
+    <string name="calib_btn_start">Empezar</string>
+    <string name="calib_btn_stop">Detener ahora</string>
+    <string name="calib_btn_adjust">Ajustar</string>
+    <string name="calib_btn_discard">Descartar este intento</string>
+    <string name="calib_btn_retry">Probar de nuevo con los nuevos valores</string>
+    <string name="calib_btn_save">Guardar calibración</string>
+    <string name="calib_btn_reset">Restaurar valores por defecto</string>
+
+    <string name="calib_status_countdown">Empieza en %1$d…</string>
+    <string name="calib_hint_countdown">Coloca el móvil y prepárate. Sonará un pitido al empezar.</string>
+    <string name="calib_status_recording">Detectadas: %1$d</string>
+    <string name="calib_hint_recording">Haz las repeticiones. Al acabar quédate quieto 4 segundos hasta oír el pitido final.</string>
+
+    <string name="calib_review_detected">Con los valores actuales la app ha detectado %1$d repeticiones. ¿Cuántas hiciste realmente?</string>
+    <string name="calib_hint_real_count">Repeticiones reales</string>
+    <string name="calib_error_real_count">Introduce un número entre %1$d y %2$d</string>
+    <string name="calib_error_no_data">No se han registrado datos del sensor en este intento. Inténtalo de nuevo.</string>
+
+    <string name="calib_result_exact">Ajuste correcto. Antes: %1$d de %2$d. Con los nuevos valores: %3$d de %2$d.</string>
+    <string name="calib_result_approx">No hay un ajuste exacto. Antes: %1$d de %2$d. Mejor aproximación: %3$d de %2$d. Intenta repetir el movimiento de forma más uniforme.</string>
+    <string name="calib_result_changes">Umbral: %1$.2f → %2$.2f m/s²\nIntervalo mínimo: %3$d → %4$d ms\nCalculado con %5$d intento(s) de esta sesión.</string>
+    <string name="calib_robust_high">Margen amplio (cualquier umbral entre %1$.2f y %2$.2f funcionaría): ajuste robusto. Prueba de nuevo para confirmarlo o guárdalo.</string>
+    <string name="calib_robust_medium">Margen moderado (umbral válido entre %1$.2f y %2$.2f). Recomendable probar otro intento.</string>
+    <string name="calib_robust_low">Margen estrecho (umbral válido entre %1$.2f y %2$.2f): el ajuste es frágil. Haz otro intento para afinarlo.</string>
+
+    <string name="calib_saved">Calibración guardada</string>
+    <string name="calib_reset_title">Restaurar valores por defecto</string>
+    <string name="calib_reset_message">Se borrará la calibración guardada de este ejercicio y los intentos de esta sesión.</string>
+    <string name="calib_reset_done">Valores por defecto restaurados</string>
+    <string name="calib_exit_title">¿Salir sin guardar?</string>
+    <string name="calib_exit_message">Los valores ajustados en esta sesión se perderán.</string>
+    <string name="calib_exit_discard">Salir</string>
 </resources>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/calibration_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".CalibrationActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/tv_calib_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            tools:text="Calibrar: Flexiones" />
+
+        <TextView
+            android:id="@+id/tv_calib_params"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="14sp"
+            tools:text="Umbral: 2.5 m/s² · Intervalo mínimo: 1400 ms (por defecto)" />
+
+        <!-- 1. Instrucciones -->
+        <LinearLayout
+            android:id="@+id/panel_intro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_calib_instructions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                tools:text="@string/calib_instr_flexiones" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/calib_instr_general"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btn_calib_start"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/calib_btn_start" />
+        </LinearLayout>
+
+        <!-- 2. Captura en curso -->
+        <LinearLayout
+            android:id="@+id/panel_capture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_capture_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                tools:text="Detectadas: 4" />
+
+            <TextView
+                android:id="@+id/tv_capture_hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:textSize="16sp"
+                tools:text="@string/calib_hint_recording" />
+
+            <Button
+                android:id="@+id/btn_calib_stop"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/calib_btn_stop" />
+        </LinearLayout>
+
+        <!-- 3. Introducir repeticiones reales -->
+        <LinearLayout
+            android:id="@+id/panel_review"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_review_detected"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                tools:text="La app ha detectado 7 repeticiones." />
+
+            <EditText
+                android:id="@+id/et_real_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:autofillHints=""
+                android:hint="@string/calib_hint_real_count"
+                android:imeOptions="actionDone"
+                android:inputType="number"
+                android:maxLength="3"
+                android:minHeight="48dp" />
+
+            <Button
+                android:id="@+id/btn_calib_adjust"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/calib_btn_adjust" />
+
+            <Button
+                android:id="@+id/btn_calib_discard"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/calib_btn_discard" />
+        </LinearLayout>
+
+        <!-- 4. Resultado del ajuste -->
+        <LinearLayout
+            android:id="@+id/panel_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_result_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Ajuste correcto" />
+
+            <TextView
+                android:id="@+id/tv_result_changes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textSize="16sp"
+                tools:text="Umbral: 2.5 → 1.8 m/s²" />
+
+            <TextView
+                android:id="@+id/tv_result_robustness"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textSize="16sp"
+                tools:text="Margen amplio" />
+
+            <Button
+                android:id="@+id/btn_calib_retry"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/calib_btn_retry" />
+
+            <Button
+                android:id="@+id/btn_calib_save"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/calib_btn_save" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_calib_reset"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/calib_btn_reset" />
+
+    </LinearLayout>
+</ScrollView>

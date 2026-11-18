@@ -1,20 +1,18 @@
 package es.udc.psi_2025_26.FitSense;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -32,25 +30,27 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private DatabaseManager dbManager;
     private AuthManager authManager;
+    private CalibrationStore calibrationStore;
+
+    /** Contador de pantalla de cada ejercicio, indexado por {@link ExerciseType#ordinal()}. */
+    private TextView[] counterViews;
+    /** Texto con formato de cada contador ("Saltos: %1$d"...), mismo índice. */
+    private int[] counterFormats;
 
     // --- RECEPTOR DE SENSORES INYECTADO ---
     private final BroadcastReceiver jumpReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (JumpService.ACTION_UPDATE_COUNT.equals(intent.getAction())) {
-                int saltos = intent.getIntExtra(JumpService.EXTRA_COUNT_SALTOS, 0);
-                int flexiones = intent.getIntExtra(JumpService.EXTRA_COUNT_FLEXIONES, 0);
-                actualizarPantalla(saltos, flexiones);
+                int[] counts = intent.getIntArrayExtra(JumpService.EXTRA_COUNTS);
+                if (counts != null) actualizarPantalla(counts);
             }
         }
     };
 
     // --- PERMISOS INYECTADOS ---
     private final ActivityResultLauncher<String[]> requestPermissionsLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-                result.getOrDefault(Manifest.permission.POST_NOTIFICATIONS, false);
-                result.getOrDefault(Manifest.permission.ACTIVITY_RECOGNITION, false);
-            });
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {});
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,62 +70,95 @@ public class MainActivity extends AppCompatActivity {
         // 1. Inicializar Firebase con el contexto actual
         dbManager = new DatabaseManager(this);
         authManager = new AuthManager(this);
+        calibrationStore = new CalibrationStore(this);
 
         Bundle bundle = getIntent().getExtras();
-        if(bundle!=null){
+        if (bundle != null && bundle.containsKey(USER_ID)) {
             String currentUserId = bundle.getString(USER_ID);
-            if(currentUserId == null){
+            if (currentUserId == null) {
                 Toast.makeText(getApplicationContext(), R.string.error_general, Toast.LENGTH_SHORT).show();
-            }else{
+            } else {
                 dbManager.escucharRutina(currentUserId);
             }
         }
 
-        // Inicializar UI Sensores
-        actualizarPantalla(JumpService.jumpCount, JumpService.flexionesCount);
+        // Vistas y botones por ejercicio (mismo orden que ExerciseType)
+        counterViews = new TextView[ExerciseType.values().length];
+        counterFormats = new int[ExerciseType.values().length];
+        bindExercise(ExerciseType.SALTOS, binding.tvContadorSaltos, R.string.tv_saltos_default, binding.btnStartSaltos);
+        bindExercise(ExerciseType.FLEXIONES, binding.tvContadorFlexiones, R.string.tv_flexiones_default, binding.btnStartFlexiones);
+        bindExercise(ExerciseType.PASOS, binding.tvContadorPasos, R.string.tv_pasos_default, binding.btnStartPasos);
+        bindExercise(ExerciseType.DOMINADAS, binding.tvContadorDominadas, R.string.tv_dominadas_default, binding.btnStartDominadas);
+
+        actualizarPantalla(JumpService.getCounts());
         solicitarPermisosIniciales();
 
-        binding.btnStartSaltos.setOnClickListener(v -> comprobarPermisosYArrancar(JumpService.TYPE_SALTOS));
-        binding.btnStartFlexiones.setOnClickListener(v -> comprobarPermisosYArrancar(JumpService.TYPE_FLEXIONES));
+        binding.btnAutocalibrar.setOnClickListener(v -> elegirEjercicioACalibrar());
 
         binding.btnPublishRutine.setOnClickListener(v -> {
             stopService(new Intent(this, JumpService.class));
 
             String userId = authManager.getCurrentUserId();
             if (userId != null) {
-                // Subir rutinas detectadas (textos hardcodeados por integridad de base de datos)
-                if (JumpService.jumpCount > 0) {
-                    dbManager.registrarRutina(userId, "Saltos", JumpService.jumpCount);
-                }
-                if (JumpService.flexionesCount > 0) {
-                    dbManager.registrarRutina(userId, "Flexiones", JumpService.flexionesCount);
+                // Subir rutinas detectadas (nombre fijo de BD por integridad de los datos)
+                int[] counts = JumpService.getCounts();
+                for (ExerciseType type : ExerciseType.values()) {
+                    if (counts[type.ordinal()] > 0) {
+                        dbManager.registrarRutina(userId, type.dbName, counts[type.ordinal()]);
+                    }
                 }
 
-                // 2. Uso de R.string para los Toasts
                 Toast.makeText(this, R.string.rutinas_guardadas, Toast.LENGTH_SHORT).show();
 
                 // Reiniciar interfaz para el próximo set
-                JumpService.jumpCount = 0;
-                JumpService.flexionesCount = 0;
-                actualizarPantalla(0, 0);
+                JumpService.resetCounts();
+                actualizarPantalla(JumpService.getCounts());
             } else {
                 Toast.makeText(this, R.string.falta_sesion, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void actualizarPantalla(int saltos, int flexiones) {
-        binding.tvContadorSaltos.setText(getString(R.string.tv_saltos_default, saltos));
-        binding.tvContadorFlexiones.setText(getString(R.string.tv_flexiones_default, flexiones));
+    private void bindExercise(ExerciseType type, TextView counter, int format, View startButton) {
+        counterViews[type.ordinal()] = counter;
+        counterFormats[type.ordinal()] = format;
+        startButton.setOnClickListener(v -> comprobarPermisosYArrancar(type));
+    }
+
+    private void actualizarPantalla(int[] counts) {
+        for (int i = 0; i < counterViews.length; i++) {
+            counterViews[i].setText(getString(counterFormats[i], counts[i]));
+        }
+    }
+
+    private void elegirEjercicioACalibrar() {
+        if (JumpService.isWorkoutRunning()) {
+            // Calibrar mientras se cuenta mezclaría ambas cosas en el mismo sensor/servicio.
+            Toast.makeText(this, R.string.calib_error_workout_running, Toast.LENGTH_LONG).show();
+            return;
+        }
+        ExerciseType[] types = ExerciseType.values();
+        String[] labels = new String[types.length];
+        for (int i = 0; i < types.length; i++) {
+            String name = getString(types[i].nameRes);
+            labels[i] = calibrationStore.isCalibrated(types[i])
+                    ? getString(R.string.calib_item_calibrated, name)
+                    : name;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.calib_choose_title)
+                .setItems(labels, (dialog, which) -> {
+                    Intent intent = new Intent(this, CalibrationActivity.class);
+                    intent.putExtra(CalibrationActivity.EXTRA_EXERCISE_TYPE, types[which].name());
+                    startActivity(intent);
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void solicitarPermisosIniciales() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            boolean hasNotif = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
-            boolean hasActivity = ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED;
-            if (!hasNotif || !hasActivity) {
-                requestPermissionsLauncher.launch(new String[]{ Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.ACTIVITY_RECOGNITION });
-            }
+        if (!PermissionHelper.hasServicePermissions(this)) {
+            requestPermissionsLauncher.launch(PermissionHelper.REQUIRED_PERMISSIONS);
         }
     }
 
@@ -134,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         IntentFilter filter = new IntentFilter(JumpService.ACTION_UPDATE_COUNT);
         ContextCompat.registerReceiver(this, jumpReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
-        actualizarPantalla(JumpService.jumpCount, JumpService.flexionesCount);
+        actualizarPantalla(JumpService.getCounts());
     }
 
     @Override
@@ -143,23 +176,18 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(jumpReceiver);
     }
 
-    private void comprobarPermisosYArrancar(int tipoEjercicio) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            boolean hasNotif = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
-            boolean hasActivity = ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED;
-            if (hasNotif && hasActivity) {
-                iniciarServicioRutina(tipoEjercicio);
-            } else {
-                Toast.makeText(this, R.string.permiso_denegado, Toast.LENGTH_LONG).show();
-            }
-        } else {
+    private void comprobarPermisosYArrancar(ExerciseType tipoEjercicio) {
+        if (PermissionHelper.hasServicePermissions(this)) {
             iniciarServicioRutina(tipoEjercicio);
+        } else {
+            Toast.makeText(this, R.string.permiso_denegado, Toast.LENGTH_LONG).show();
         }
     }
 
-    private void iniciarServicioRutina(int tipoEjercicio) {
+    private void iniciarServicioRutina(ExerciseType tipoEjercicio) {
         Intent serviceIntent = new Intent(this, JumpService.class);
-        serviceIntent.putExtra(JumpService.EXTRA_EXERCISE_TYPE, tipoEjercicio);
+        serviceIntent.putExtra(JumpService.EXTRA_MODE, JumpService.MODE_WORKOUT);
+        serviceIntent.putExtra(JumpService.EXTRA_EXERCISE_TYPE, tipoEjercicio.name());
         ContextCompat.startForegroundService(this, serviceIntent);
     }
 }
