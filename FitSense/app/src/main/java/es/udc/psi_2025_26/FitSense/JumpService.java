@@ -94,7 +94,6 @@ public class JumpService extends Service implements SensorEventListener {
     // --- Estado interno ---
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final CalibrationRepository repository = CalibrationRepository.getInstance();
-    private CalibrationStore calibrationStore;
 
     private SensorManager sensorManager;
     private Sensor sensor;
@@ -112,7 +111,6 @@ public class JumpService extends Service implements SensorEventListener {
     @Override
     public void onCreate() {
         super.onCreate();
-        calibrationStore = new CalibrationStore(this);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
             sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
@@ -161,8 +159,11 @@ public class JumpService extends Service implements SensorEventListener {
         }
         // Al cambiar de ejercicio se conservan los contadores de los demás, como antes.
         activeExercise = type;
-        detector = new RepetitionDetector(calibrationStore.get(type), type.smoothingTauSec);
-        Log.d(TAG, "Modo entrenamiento: " + type + " con " + calibrationStore.get(type));
+        // Se lee en cada arranque/cambio de ejercicio para usar siempre la calibración del
+        // usuario con sesión iniciada en ese momento.
+        DetectorParams params = CalibrationStore.forCurrentUser(this).get(type);
+        detector = new RepetitionDetector(params, type.smoothingTauSec);
+        Log.d(TAG, "Modo entrenamiento: " + type + " con " + params);
 
         startListening();
         updateNotification();

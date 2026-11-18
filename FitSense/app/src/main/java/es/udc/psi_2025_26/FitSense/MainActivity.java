@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private DatabaseManager dbManager;
     private AuthManager authManager;
-    private CalibrationStore calibrationStore;
 
     /** Contador de pantalla de cada ejercicio, indexado por {@link ExerciseType#ordinal()}. */
     private TextView[] counterViews;
@@ -70,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
         // 1. Inicializar Firebase con el contexto actual
         dbManager = new DatabaseManager(this);
         authManager = new AuthManager(this);
-        calibrationStore = new CalibrationStore(this);
 
         Bundle bundle = getIntent().getExtras();
         if (bundle != null && bundle.containsKey(USER_ID)) {
@@ -137,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.calib_error_workout_running, Toast.LENGTH_LONG).show();
             return;
         }
+        CalibrationStore calibrationStore = CalibrationStore.forCurrentUser(this);
         ExerciseType[] types = ExerciseType.values();
         String[] labels = new String[types.length];
         for (int i = 0; i < types.length; i++) {

@@ -50,7 +50,8 @@ public class CalibrationViewModel extends AndroidViewModel {
 
     public CalibrationViewModel(@NonNull Application application) {
         super(application);
-        store = new CalibrationStore(application);
+        // El usuario no puede cambiar mientras esta pantalla vive (cerrar sesión está en otra).
+        store = CalibrationStore.forCurrentUser(application);
     }
 
     /** Idempotente: solo inicializa la primera vez (no en cada recreación de la Activity). */
