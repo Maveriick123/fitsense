@@ -92,11 +92,11 @@ para todos. La autocalibración ajusta cada
 
 1. Pulsa **Autocalibrar** y elige el ejercio.
 2. Pulsa **Empezar**. Tienes 5 segundos para guardar el móvil y un pitido marca el inicio.
-3. Haz las repeticiones contándolas tú (se
+3. Haz las repeticiones contándolas tú (se recomiendan entre 10 y 20).
 4. Al terminar, quédate quieto 4 segundos. Un segundo pitido indica que la grabación ha terminado y ya puedes sacar
 el móvil.
 5. La app muestra cuántas repeticiones ha detectado y tú introduces cuántas hiciste realmente.
-6. Pulsa **Ajustar**: la app calcula los nu
+6. Pulsa **Ajustar**: la app calcula los nuevos valores.
 7. Pulsa **Probar de nuevo** para comprobarlos, o **Guardar** si ya cuenta bien.
 
 **Cómo funciona por dentro:**
@@ -124,7 +124,7 @@ teléfono: cada fabricante calcula y filtra a distinta, y la frecuencia de muest
 también varía. Por eso no se pueden pasar de un móvil a otro.
 - Por el mismo motivo, el archivo de calibrs de seguridad de Android**
 (`backup_rules.xml` y `data_extraction_rules.xml`), para que no se restaure en un móvil nuevo con un sensor distinto.
-Al cambiar de móvil hay que volver a calibr
+Al cambiar de móvil hay que volver a calibrar.
 
 ## 🔐 Permisos
 
