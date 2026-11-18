@@ -90,7 +90,7 @@ para todos. La autocalibración ajusta cada
 
 **Cómo se usa:**
 
-1. Pulsa **Autocalibrar** y elige el ejerci
+1. Pulsa **Autocalibrar** y elige el ejercio.
 2. Pulsa **Empezar**. Tienes 5 segundos para guardar el móvil y un pitido marca el inicio.
 3. Haz las repeticiones contándolas tú (se
 4. Al terminar, quédate quieto 4 segundos. Un segundo pitido indica que la grabación ha terminado y ya puedes sacar
@@ -118,7 +118,7 @@ valores por defecto.
 **Dónde se guarda:**
 
 - **Por usuario:** la forma de moverse es personal, así que cada cuenta tiene su propia calibración. Si varias
-personas comparten el móvil, cada una usa l
+personas comparten el móvil, cada una usa la suya al iniciar sesión.
 - **Por dispositivo:** se guarda en el móvil y no en la nube. Los valores calibrados dependen del sensor de cada
 teléfono: cada fabricante calcula y filtra a distinta, y la frecuencia de muestreo real
 también varía. Por eso no se pueden pasar de un móvil a otro.
