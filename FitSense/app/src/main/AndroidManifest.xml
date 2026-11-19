@@ -32,7 +32,7 @@
 
         <!-- Schermata delle Routine (De tu compañero) -->
         <activity
-            android:name=".RoutinesActivity"
+            android:name=".presentation.ui.RoutinesActivity"
             android:exported="false" />
 
         <!-- MainActivity (Tu pantalla de ejercicio) -->

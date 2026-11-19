@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import es.udc.psi_2025_26.FitSense.AppContainer;
 import es.udc.psi_2025_26.FitSense.GlobalApplication;
 import es.udc.psi_2025_26.FitSense.R;
-import es.udc.psi_2025_26.FitSense.RoutinesActivity;
 import es.udc.psi_2025_26.FitSense.databinding.ActivityLoginBinding;
 import es.udc.psi_2025_26.FitSense.presentation.presenter.LoginPresenter;
 import es.udc.psi_2025_26.FitSense.presentation.presenter.LoginPresenterImp;

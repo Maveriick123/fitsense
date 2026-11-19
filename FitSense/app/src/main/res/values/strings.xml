@@ -28,8 +28,11 @@
 
     <string name="permiso_denegado">Permiso Denegado</string>
 
-    <!-- Textos italianos traducidos y comillas escapadas eliminadas -->
-    <string name="numero_repeticiones">Dificultad: </string>
+    <!-- Historial de rutinas -->
+    <string name="routine_repetitions">Repeticiones: %1$d</string>
+    <string name="routines_empty">Todavía no has guardado ninguna rutina</string>
+    <string name="routines_error">No se ha podido cargar el historial. Comprueba la conexión.</string>
+
     <string name="acceso_exitoso">¡Acceso exitoso!</string>
     <string name="error_inicio_sesion">Error al iniciar sesión: %1$s</string>
     <string name="error_inicio_sesion_generico">No se ha podido iniciar sesión</string>
@@ -53,7 +56,6 @@
     <string name="notif_calib_recording">%1$s: detectadas %2$d</string>
     <string name="rutinas_guardadas">Rutinas guardadas en la nube</string>
     <string name="falta_sesion">Falta inicio de sesión</string>
-    <string name="unidad_reps"> reps</string>
 
     <!-- Hints de los EditText traducidos -->
     <string name="prompt_email">Email</string>

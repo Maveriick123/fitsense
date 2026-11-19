@@ -1,9 +1,8 @@
-package es.udc.psi_2025_26.FitSense;
+package es.udc.psi_2025_26.FitSense.presentation.ui;
 
+import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,60 +10,57 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.udc.psi_2025_26.FitSense.R;
+import es.udc.psi_2025_26.FitSense.databinding.ItemRoutineBinding;
+import es.udc.psi_2025_26.FitSense.presentation.uimodel.RoutineUiModel;
+
+// Adaptador del historial de rutinas
 public class RoutineAdapter extends RecyclerView.Adapter<RoutineAdapter.RoutineViewHolder> {
 
-    // Lista che conterrà i modelli delle routine
-    private List<RoutineModel> routines = new ArrayList<>();
+    private final List<RoutineUiModel> mRoutines = new ArrayList<>();
 
-    // Costruttore vuoto
-    public RoutineAdapter() {
-    }
-
-    // Costruttore che accetta solo la lista (más limpio)
-    public RoutineAdapter(List<RoutineModel> routines) {
-        this.routines = routines;
-    }
-
-    // Metodo per aggiornare la lista quando arrivano dati da Firebase
-    public void updateData(List<RoutineModel> newRoutines) {
-        this.routines.clear();
-        this.routines.addAll(newRoutines);
-        notifyItemRangeChanged(0, newRoutines.size());
+    // Cambia la lista que se muestra
+    public void setRoutines(List<RoutineUiModel> routines) {
+        int oldSize = mRoutines.size();
+        mRoutines.clear();
+        notifyItemRangeRemoved(0, oldSize);
+        mRoutines.addAll(routines);
+        notifyItemRangeInserted(0, routines.size());
     }
 
     @NonNull
     @Override
     public RoutineViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_routine, parent, false);
-        return new RoutineViewHolder(view);
+        ItemRoutineBinding binding = ItemRoutineBinding.inflate(
+                LayoutInflater.from(parent.getContext()), parent, false);
+        return new RoutineViewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RoutineViewHolder holder, int position) {
-        RoutineModel routine = routines.get(position);
-
-        holder.tvRoutineName.setText(routine.getName());
-
-        // Obtenemos el texto directamente desde el contexto de la vista
-        String prefix = holder.itemView.getContext().getString(R.string.numero_repeticiones);
-        holder.tvRoutineDifficulty.setText(prefix + routine.getDifficulty());
+        holder.bind(mRoutines.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return routines != null ? routines.size() : 0;
+        return mRoutines.size();
     }
 
-    // Classe ViewHolder per mappare gli elementi visivi
-    public static class RoutineViewHolder extends RecyclerView.ViewHolder {
-        TextView tvRoutineName;
-        TextView tvRoutineDifficulty;
+    static class RoutineViewHolder extends RecyclerView.ViewHolder {
 
-        public RoutineViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvRoutineName = itemView.findViewById(R.id.tvRoutineName);
-            tvRoutineDifficulty = itemView.findViewById(R.id.tvRoutineDifficulty);
+        private final ItemRoutineBinding mBinding;
+
+        RoutineViewHolder(@NonNull ItemRoutineBinding binding) {
+            super(binding.getRoot());
+            mBinding = binding;
+        }
+
+        // ViewHolder con lo necesario para pintar una fila
+        void bind(RoutineUiModel routine) {
+            Context context = itemView.getContext();
+            mBinding.tvRoutineName.setText(routine.exerciseNameRes);
+            mBinding.tvRoutineReps.setText(
+                    context.getString(R.string.routine_repetitions, routine.repetitions));
         }
     }
 }
