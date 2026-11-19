@@ -45,4 +45,11 @@
         android:layout_height="wrap_content"
         android:text="@string/register"
         style="?attr/materialButtonOutlinedStyle"/>
+
+    <ProgressBar
+        android:id="@+id/progressLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:visibility="gone"/>
 </LinearLayout>

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.udc.psi_2025_26.FitSense.databinding.ActivityRoutinesBinding;
+import es.udc.psi_2025_26.FitSense.presentation.ui.LoginActivity;
 
 public class RoutinesActivity extends AppCompatActivity {
 
