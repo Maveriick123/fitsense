@@ -26,10 +26,14 @@ import androidx.core.content.ContextCompat;
 
 import java.util.Arrays;
 
-import es.udc.psi_2025_26.FitSense.detection.DetectorParams;
-import es.udc.psi_2025_26.FitSense.detection.ExponentialSmoother;
-import es.udc.psi_2025_26.FitSense.detection.QuietDetector;
-import es.udc.psi_2025_26.FitSense.detection.RepetitionDetector;
+import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
+import es.udc.psi_2025_26.FitSense.domain.detection.ExponentialSmoother;
+import es.udc.psi_2025_26.FitSense.domain.detection.QuietDetector;
+import es.udc.psi_2025_26.FitSense.domain.detection.RepetitionDetector;
+import es.udc.psi_2025_26.FitSense.domain.model.CapturePhase;
+import es.udc.psi_2025_26.FitSense.domain.model.CaptureState;
+import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
+import es.udc.psi_2025_26.FitSense.presentation.uimodel.ExerciseUiModelMapper;
 
 /**
  * Servicio en primer plano que lee el acelerómetro y cuenta repeticiones.
@@ -238,7 +242,7 @@ public class JumpService extends Service implements SensorEventListener {
         float magnitude = linearMagnitude(event);
 
         if (calibrating) {
-            if (repository.getPhase() != CalibrationRepository.Phase.RECORDING) return;
+            if (repository.getPhase() != CapturePhase.RECORDING) return;
             repository.onSample(timestampNs, magnitude);
             if (detector.process(timestampNs, magnitude)) {
                 repository.onRepetition(detector.getCount());
@@ -323,17 +327,17 @@ public class JumpService extends Service implements SensorEventListener {
 
         String title;
         String text;
-        String exerciseName = getString(activeExercise.nameRes);
+        String exerciseName = getString(ExerciseUiModelMapper.map(activeExercise).nameRes);
         if (calibrating) {
             title = getString(R.string.notif_calib_title);
-            CalibrationRepository.CaptureState s = repository.getState().getValue();
-            text = (s != null && s.phase == CalibrationRepository.Phase.COUNTDOWN)
+            CaptureState s = repository.getState().getValue();
+            text = (s != null && s.phase == CapturePhase.COUNTDOWN)
                     ? getString(R.string.notif_calib_countdown, exerciseName, s.secondsLeft)
                     : getString(R.string.notif_calib_recording, exerciseName,
                             s == null ? 0 : s.liveCount);
         } else {
             title = getString(R.string.notif_title);
-            text = getString(activeExercise.notificationRes, counts[activeExercise.ordinal()]);
+            text = getString(ExerciseUiModelMapper.map(activeExercise).notificationRes, counts[activeExercise.ordinal()]);
         }
 
         return new NotificationCompat.Builder(this, getString(R.string.channel_id))

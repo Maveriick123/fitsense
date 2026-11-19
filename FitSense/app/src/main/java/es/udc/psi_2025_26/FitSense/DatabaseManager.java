@@ -13,6 +13,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
+import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
+
 public class DatabaseManager {
 
     // Para acceder al nodo raíz
@@ -33,13 +35,24 @@ public class DatabaseManager {
         mDatabase = database.getReference();
     }
 
-    public void registrarRutina(String usuarioId, String ejercicio, int repeticiones) {
+    public void registrarRutina(String usuarioId, ExerciseType ejercicio, int repeticiones) {
         Map<String, Object> rutinaInfo = new HashMap<>();
         rutinaInfo.put(KEY_USER_ID, usuarioId);
-        rutinaInfo.put(KEY_EXERCISE_CAMBER, ejercicio);
+        rutinaInfo.put(KEY_EXERCISE_CAMBER, nombreEnBd(ejercicio));
         rutinaInfo.put(KEY_REPS_CAMBER, repeticiones);
 
         mDatabase.child(NODE_ROUTINE).push().setValue(rutinaInfo);
+    }
+
+    // Nombre con el que se guarda cada ejercicio, no se traduce para no romper los datos ya guardados
+    private static String nombreEnBd(ExerciseType ejercicio) {
+        switch (ejercicio) {
+            case FLEXIONES: return "Flexiones";
+            case PASOS: return "Pasos";
+            case DOMINADAS: return "Dominadas";
+            case SALTOS:
+            default: return "Saltos";
+        }
     }
 
     public void escucharRutina(final String userId) {

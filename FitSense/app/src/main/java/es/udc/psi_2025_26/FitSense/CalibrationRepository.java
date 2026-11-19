@@ -4,7 +4,9 @@ import androidx.annotation.MainThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import es.udc.psi_2025_26.FitSense.detection.SignalRecording;
+import es.udc.psi_2025_26.FitSense.domain.detection.SignalRecording;
+import es.udc.psi_2025_26.FitSense.domain.model.CapturePhase;
+import es.udc.psi_2025_26.FitSense.domain.model.CaptureState;
 
 /**
  * Fuente única de verdad de la captura de calibración en curso (patrón Repository).
@@ -21,24 +23,10 @@ import es.udc.psi_2025_26.FitSense.detection.SignalRecording;
  */
 public final class CalibrationRepository {
 
-    public enum Phase { IDLE, COUNTDOWN, RECORDING, FINISHED }
-
-    public static final class CaptureState {
-        public final Phase phase;
-        public final int secondsLeft;
-        public final int liveCount;
-
-        CaptureState(Phase phase, int secondsLeft, int liveCount) {
-            this.phase = phase;
-            this.secondsLeft = secondsLeft;
-            this.liveCount = liveCount;
-        }
-    }
-
     private static final CalibrationRepository INSTANCE = new CalibrationRepository();
 
     private final MutableLiveData<CaptureState> state =
-            new MutableLiveData<>(new CaptureState(Phase.IDLE, 0, 0));
+            new MutableLiveData<>(CaptureState.IDLE);
     private SignalRecording recording;
 
     private CalibrationRepository() {}
@@ -51,39 +39,39 @@ public final class CalibrationRepository {
         return state;
     }
 
-    public Phase getPhase() {
+    public CapturePhase getPhase() {
         CaptureState s = state.getValue();
-        return s == null ? Phase.IDLE : s.phase;
+        return s == null ? CapturePhase.IDLE : s.phase;
     }
 
     public boolean isCapturing() {
-        Phase p = getPhase();
-        return p == Phase.COUNTDOWN || p == Phase.RECORDING;
+        CapturePhase p = getPhase();
+        return p == CapturePhase.COUNTDOWN || p == CapturePhase.RECORDING;
     }
 
     @MainThread
     void onCountdown(int secondsLeft) {
         recording = null;
-        state.setValue(new CaptureState(Phase.COUNTDOWN, secondsLeft, 0));
+        state.setValue(new CaptureState(CapturePhase.COUNTDOWN, secondsLeft, 0));
     }
 
     @MainThread
     void onRecordingStarted() {
         recording = new SignalRecording();
-        state.setValue(new CaptureState(Phase.RECORDING, 0, 0));
+        state.setValue(new CaptureState(CapturePhase.RECORDING, 0, 0));
     }
 
     @MainThread
     void onSample(long timestampNs, float magnitude) {
-        if (recording != null && getPhase() == Phase.RECORDING) {
+        if (recording != null && getPhase() == CapturePhase.RECORDING) {
             recording.add(timestampNs, magnitude);
         }
     }
 
     @MainThread
     void onRepetition(int count) {
-        if (getPhase() == Phase.RECORDING) {
-            state.setValue(new CaptureState(Phase.RECORDING, 0, count));
+        if (getPhase() == CapturePhase.RECORDING) {
+            state.setValue(new CaptureState(CapturePhase.RECORDING, 0, count));
         }
     }
 
@@ -95,26 +83,26 @@ public final class CalibrationRepository {
      */
     @MainThread
     public void finish(long trimFromNs) {
-        Phase phase = getPhase();
-        if (phase == Phase.COUNTDOWN) {
+        CapturePhase phase = getPhase();
+        if (phase == CapturePhase.COUNTDOWN) {
             // Detenido antes de empezar a grabar: no hay nada que analizar.
             reset();
             return;
         }
-        if (phase != Phase.RECORDING) return;
+        if (phase != CapturePhase.RECORDING) return;
         if (recording != null) recording.trimFrom(trimFromNs);
         CaptureState s = state.getValue();
-        state.setValue(new CaptureState(Phase.FINISHED, 0, s == null ? 0 : s.liveCount));
+        state.setValue(new CaptureState(CapturePhase.FINISHED, 0, s == null ? 0 : s.liveCount));
     }
 
     /** Grabación del último intento terminado, o null si no hay ninguno. */
     public SignalRecording getFinishedRecording() {
-        return getPhase() == Phase.FINISHED ? recording : null;
+        return getPhase() == CapturePhase.FINISHED ? recording : null;
     }
 
     @MainThread
     public void reset() {
         recording = null;
-        state.setValue(new CaptureState(Phase.IDLE, 0, 0));
+        state.setValue(CaptureState.IDLE);
     }
 }
