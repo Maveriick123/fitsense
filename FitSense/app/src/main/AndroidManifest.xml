@@ -21,7 +21,7 @@
 
         <!-- Schermata di avvio principale: LoginActivity (De tu compañero) -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".presentation.ui.LoginActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

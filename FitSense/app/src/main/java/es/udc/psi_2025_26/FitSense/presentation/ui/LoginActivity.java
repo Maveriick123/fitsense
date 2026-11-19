@@ -1,16 +1,26 @@
-package es.udc.psi_2025_26.FitSense;
+package es.udc.psi_2025_26.FitSense.presentation.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
+import es.udc.psi_2025_26.FitSense.AppContainer;
+import es.udc.psi_2025_26.FitSense.GlobalApplication;
+import es.udc.psi_2025_26.FitSense.R;
+import es.udc.psi_2025_26.FitSense.RoutinesActivity;
 import es.udc.psi_2025_26.FitSense.databinding.ActivityLoginBinding;
+import es.udc.psi_2025_26.FitSense.presentation.presenter.LoginPresenter;
+import es.udc.psi_2025_26.FitSense.presentation.presenter.LoginPresenterImp;
+import es.udc.psi_2025_26.FitSense.presentation.presenter.LoginView;
 
-public class LoginActivity extends AppCompatActivity {
+// Pantalla de login. Solo pinta y le pasa los eventos al Presenter
+public class LoginActivity extends AppCompatActivity implements LoginView {
 
     private ActivityLoginBinding binding;
-    private AuthManager authManager;
+    private LoginPresenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,60 +28,62 @@ public class LoginActivity extends AppCompatActivity {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // 1. Instanciamos AuthManager pasándole el contexto actual (this)
-        authManager = new AuthManager(this);
+        AppContainer container = ((GlobalApplication) getApplication()).getContainer();
+        presenter = new LoginPresenterImp(this, container.signInUseCase(),
+                container.registerUseCase(), container.taskRunner());
 
-        // 2. Logica del bottone ACCEDI
-        binding.btnLogin.setOnClickListener(v -> {
-            String email = binding.etEmail.getText().toString().trim();
-            String password = binding.etPassword.getText().toString().trim();
+        binding.btnLogin.setOnClickListener(v -> presenter.onLogin(email(), password()));
+        binding.btnRegister.setOnClickListener(v -> presenter.onRegister(email(), password()));
+    }
 
-            if (!email.isEmpty() && !password.isEmpty()) {
-                authManager.iniciarSesion(email, password, new AuthManager.AuthCallback() {
-                    @Override
-                    public void onSuccess(String userId) {
-                        Toast.makeText(LoginActivity.this, R.string.acceso_exitoso, Toast.LENGTH_SHORT).show();
+    @Override
+    protected void onDestroy() {
+        presenter.onDestroy();
+        super.onDestroy();
+    }
 
-                        Intent intent = new Intent(LoginActivity.this, RoutinesActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
+    private String email() {
+        return binding.etEmail.getText().toString();
+    }
 
-                    @Override
-                    public void onFailure(String errorMessage) {
-                        Toast.makeText(LoginActivity.this, getString(R.string.error_inicio_sesion) + errorMessage, Toast.LENGTH_LONG).show();
-                    }
-                });
-            } else {
-                Toast.makeText(this, R.string.usuario_requerido, Toast.LENGTH_SHORT).show();
-            }
-        });
+    private String password() {
+        return binding.etPassword.getText().toString();
+    }
 
-        // 3. Logica del bottone REGISTRATI
-        binding.btnRegister.setOnClickListener(v -> {
-            String email = binding.etEmail.getText().toString().trim();
-            String password = binding.etPassword.getText().toString().trim();
+    // Métodos de LoginView
 
-            if (!email.isEmpty() && !password.isEmpty()) {
-                authManager.registrar(email, password, new AuthManager.AuthCallback() {
-                    @Override
-                    public void onSuccess(String userId) {
-                        Toast.makeText(LoginActivity.this, R.string.acceso_exitoso, Toast.LENGTH_SHORT).show();
+    @Override
+    public void showLoading(boolean loading) {
+        binding.progressLogin.setVisibility(loading ? View.VISIBLE : View.GONE);
+        binding.btnLogin.setEnabled(!loading);
+        binding.btnRegister.setEnabled(!loading);
+    }
 
-                        Intent intent = new Intent(LoginActivity.this, RoutinesActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
+    @Override
+    public void showMissingCredentials() {
+        Toast.makeText(this, R.string.usuario_requerido, Toast.LENGTH_SHORT).show();
+    }
 
-                    @Override
-                    public void onFailure(String errorMessage) {
-                        // Corrección: Uso de getString() para evitar imprimir el ID numérico
-                        Toast.makeText(LoginActivity.this, getString(R.string.error_general) + errorMessage, Toast.LENGTH_LONG).show();
-                    }
-                });
-            } else {
-                Toast.makeText(this, R.string.usuario_requerido, Toast.LENGTH_SHORT).show();
-            }
-        });
+    @Override
+    public void showWelcome() {
+        Toast.makeText(this, R.string.acceso_exitoso, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showLoginError(String detail) {
+        Toast.makeText(this, detail == null ? getString(R.string.error_inicio_sesion_generico)
+                : getString(R.string.error_inicio_sesion, detail), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void showRegisterError(String detail) {
+        Toast.makeText(this, detail == null ? getString(R.string.error_registro)
+                : getString(R.string.error_registro_detalle, detail), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void navigateToRoutines() {
+        startActivity(new Intent(this, RoutinesActivity.class));
+        finish();
     }
 }

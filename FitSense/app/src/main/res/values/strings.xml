@@ -31,11 +31,13 @@
     <!-- Textos italianos traducidos y comillas escapadas eliminadas -->
     <string name="numero_repeticiones">Dificultad: </string>
     <string name="acceso_exitoso">¡Acceso exitoso!</string>
-    <string name="error_inicio_sesion">Error: </string>
+    <string name="error_inicio_sesion">Error al iniciar sesión: %1$s</string>
+    <string name="error_inicio_sesion_generico">No se ha podido iniciar sesión</string>
     <string name="usuario_requerido">Introduce email y contraseña</string>
     <string name="error_general">Error: </string>
 
     <string name="error_registro">Error en el registro</string>
+    <string name="error_registro_detalle">Error en el registro: %1$s</string>
 
     <!-- Textos en inglés traducidos y comillas escapadas eliminadas -->
     <string name="log_out">Sesión cerrada</string>
