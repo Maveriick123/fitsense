@@ -35,9 +35,9 @@
             android:name=".presentation.ui.RoutinesActivity"
             android:exported="false" />
 
-        <!-- MainActivity (Tu pantalla de ejercicio) -->
+        <!-- Pantalla de entrenamiento -->
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.ui.WorkoutActivity"
             android:exported="false" />
 
         <!-- Autocalibración de los detectores -->
@@ -49,7 +49,7 @@
 
         <!-- SERVICIO DE PABLO -->
         <service
-            android:name=".JumpService"
+            android:name=".sensor.JumpService"
             android:exported="false"
             android:foregroundServiceType="health" />
 

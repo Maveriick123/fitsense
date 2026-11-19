@@ -1,4 +1,4 @@
-package es.udc.psi_2025_26.FitSense;
+package es.udc.psi_2025_26.FitSense.sensor;
 
 import androidx.annotation.MainThread;
 import androidx.lifecycle.LiveData;
@@ -50,7 +50,7 @@ public final class CalibrationRepository {
     }
 
     @MainThread
-    void onCountdown(int secondsLeft) {
+    public void onCountdown(int secondsLeft) {
         recording = null;
         state.setValue(new CaptureState(CapturePhase.COUNTDOWN, secondsLeft, 0));
     }

@@ -1,4 +1,4 @@
-package es.udc.psi_2025_26.FitSense;
+package es.udc.psi_2025_26.FitSense.sensor;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -26,6 +26,8 @@ import androidx.core.content.ContextCompat;
 
 import java.util.Arrays;
 
+import es.udc.psi_2025_26.FitSense.CalibrationActivity;
+import es.udc.psi_2025_26.FitSense.R;
 import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
 import es.udc.psi_2025_26.FitSense.domain.detection.ExponentialSmoother;
 import es.udc.psi_2025_26.FitSense.domain.detection.QuietDetector;
@@ -33,43 +35,59 @@ import es.udc.psi_2025_26.FitSense.domain.detection.RepetitionDetector;
 import es.udc.psi_2025_26.FitSense.domain.model.CapturePhase;
 import es.udc.psi_2025_26.FitSense.domain.model.CaptureState;
 import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
+import es.udc.psi_2025_26.FitSense.presentation.ui.WorkoutActivity;
 import es.udc.psi_2025_26.FitSense.presentation.uimodel.ExerciseUiModelMapper;
 
-/**
- * Servicio en primer plano que lee el acelerómetro y cuenta repeticiones.
- *
- * Tiene dos modos:
- *  - ENTRENAMIENTO: cuenta repeticiones del ejercicio activo con los parámetros calibrados
- *    (o los de por defecto) y las notifica a la UI por Broadcast.
- *  - CALIBRACIÓN: tras una cuenta atrás, graba la señal cruda en {@link CalibrationRepository}
- *    con unos parámetros de prueba y se detiene sola cuando el usuario se queda quieto.
- *
- * La calibración se hace en este mismo servicio (y no con un listener en la Activity) para que
- * las condiciones de captura sean IDÉNTICAS a las del entrenamiento real: mismo sensor, misma
- * frecuencia, mismo filtrado y funcionando con la pantalla bloqueada y el móvil en el bolsillo.
- * Una Activity deja de recibir eventos del sensor en cuanto se bloquea la pantalla.
- */
+// Servicio en primer plano que lee el acelerómetro y cuenta repeticiones
+// Tiene dos modos:
+//  - ENTRENAMIENTO: cuenta las repeticiones del ejercicio activo con los parámetros que le
+//    llegan en el Intent (los decide el dominio: calibración del usuario o por defecto) y las
+//    avisa por Broadcast. Lo arranca ServiceWorkoutTracker, que implementa el puerto WorkoutTracker
+//  - CALIBRACIÓN: después de una cuenta atrás graba la señal en CalibrationRepository con unos
+//    parámetros de prueba y se para solo cuando el usuario se queda quieto
+// La calibración se hace en este mismo servicio (y no con un listener en la Activity) para que
+// se capture IGUAL que en el entrenamiento: mismo sensor, misma frecuencia, mismo filtrado y
+// funcionando con la pantalla bloqueada y el móvil en el bolsillo
+// Una Activity deja de recibir eventos del sensor en cuanto se bloquea la pantalla
 public class JumpService extends Service implements SensorEventListener {
 
     private static final String TAG = "_TAG_JumpService";
     private static final int NOTIFICATION_ID = 1;
 
-    // --- Contrato de comunicación ---
+    // Claves para comunicarse con el servicio (las ve el sistema, llevan el nombre del paquete)
     public static final String ACTION_UPDATE_COUNT = "es.udc.psi_2025_26.FitSense.UPDATE_COUNT";
     /** int[] con el contador de cada ejercicio, indexado por {@link ExerciseType#ordinal()}. */
-    public static final String EXTRA_COUNTS = "COUNTS";
+    public static final String EXTRA_COUNTS = "es.udc.psi_2025_26.FitSense.EXTRA_COUNTS";
     /** {@link ExerciseType#name()} del ejercicio a contar o calibrar. */
-    public static final String EXTRA_EXERCISE_TYPE = "EXERCISE_TYPE";
-    public static final String EXTRA_MODE = "MODE";
+    public static final String EXTRA_EXERCISE_TYPE = "es.udc.psi_2025_26.FitSense.EXTRA_EXERCISE_TYPE";
+    public static final String EXTRA_MODE = "es.udc.psi_2025_26.FitSense.EXTRA_MODE";
     public static final int MODE_WORKOUT = 0;
     public static final int MODE_CALIBRATION = 1;
-    /** Parámetros de prueba para el modo calibración. */
-    public static final String EXTRA_THRESHOLD = "THRESHOLD";
-    public static final String EXTRA_MIN_INTERVAL_MS = "MIN_INTERVAL_MS";
+    // Parámetros del detector: los calibrados (entrenamiento) o los de prueba (calibración)
+    public static final String EXTRA_THRESHOLD = "es.udc.psi_2025_26.FitSense.EXTRA_THRESHOLD";
+    public static final String EXTRA_MIN_INTERVAL_MS = "es.udc.psi_2025_26.FitSense.EXTRA_MIN_INTERVAL_MS";
+
+    // Método para crear el Intent que cuenta un ejercicio con los parámetros que se le pasan
+    public static Intent newWorkoutIntent(Context context, ExerciseType type, DetectorParams params) {
+        return newIntent(context, MODE_WORKOUT, type, params);
+    }
+
+    // Método para crear el Intent que graba un intento de calibración con parámetros de prueba
+    public static Intent newCalibrationIntent(Context context, ExerciseType type, DetectorParams params) {
+        return newIntent(context, MODE_CALIBRATION, type, params);
+    }
+
+    private static Intent newIntent(Context context, int mode, ExerciseType type, DetectorParams params) {
+        return new Intent(context, JumpService.class)
+                .putExtra(EXTRA_MODE, mode)
+                .putExtra(EXTRA_EXERCISE_TYPE, type.name())
+                .putExtra(EXTRA_THRESHOLD, params.threshold)
+                .putExtra(EXTRA_MIN_INTERVAL_MS, params.minIntervalMs);
+    }
 
     // --- Calibración ---
     /** Tiempo para guardar el móvil en el bolsillo antes de empezar a grabar. */
-    static final int CALIBRATION_COUNTDOWN_S = 5;
+    public static final int CALIBRATION_COUNTDOWN_S = 5;
     /** Fin automático de la serie: 4 s por debajo de 0.6 m/s² tras haber superado 1.5 m/s². */
     private static final float QUIET_LEVEL = 0.6f;
     private static final float ACTIVE_LEVEL = 1.5f;
@@ -140,20 +158,20 @@ public class JumpService extends Service implements SensorEventListener {
         ExerciseType type = ExerciseType.fromName(
                 intent.getStringExtra(EXTRA_EXERCISE_TYPE), ExerciseType.SALTOS);
 
+        DetectorParams params = new DetectorParams(
+                intent.getFloatExtra(EXTRA_THRESHOLD, type.defaultParams.threshold),
+                intent.getLongExtra(EXTRA_MIN_INTERVAL_MS, type.defaultParams.minIntervalMs));
         if (intent.getIntExtra(EXTRA_MODE, MODE_WORKOUT) == MODE_CALIBRATION) {
-            DetectorParams params = new DetectorParams(
-                    intent.getFloatExtra(EXTRA_THRESHOLD, type.defaultParams.threshold),
-                    intent.getLongExtra(EXTRA_MIN_INTERVAL_MS, type.defaultParams.minIntervalMs));
             startCalibration(type, params);
         } else {
-            startWorkout(type);
+            startWorkout(type, params);
         }
         return START_NOT_STICKY;
     }
 
     // ------------------------------------------------------------------ Entrenamiento
 
-    private void startWorkout(ExerciseType type) {
+    private void startWorkout(ExerciseType type, DetectorParams params) {
         if (calibrating) {
             cancelCalibration();
         }
@@ -163,9 +181,6 @@ public class JumpService extends Service implements SensorEventListener {
         }
         // Al cambiar de ejercicio se conservan los contadores de los demás, como antes.
         activeExercise = type;
-        // Se lee en cada arranque/cambio de ejercicio para usar siempre la calibración del
-        // usuario con sesión iniciada en ese momento.
-        DetectorParams params = CalibrationStore.forCurrentUser(this).get(type);
         detector = new RepetitionDetector(params, type.smoothingTauSec);
         Log.d(TAG, "Modo entrenamiento: " + type + " con " + params);
 
@@ -317,7 +332,7 @@ public class JumpService extends Service implements SensorEventListener {
     }
 
     private NotificationCompat.Builder createNotificationBuilder() {
-        Class<?> target = calibrating ? CalibrationActivity.class : MainActivity.class;
+        Class<?> target = calibrating ? CalibrationActivity.class : WorkoutActivity.class;
         Intent intent = new Intent(this, target);
         intent.putExtra(CalibrationActivity.EXTRA_EXERCISE_TYPE, activeExercise.name());
         // SINGLE_TOP | CLEAR_TOP: vuelve a la pantalla existente en vez de crear otra encima.

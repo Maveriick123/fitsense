@@ -15,14 +15,20 @@ import es.udc.psi_2025_26.FitSense.data.repository.RoutineRepositoryImp;
 import es.udc.psi_2025_26.FitSense.domain.repository.AuthRepository;
 import es.udc.psi_2025_26.FitSense.domain.repository.CalibrationRepository;
 import es.udc.psi_2025_26.FitSense.domain.repository.RoutineRepository;
+import es.udc.psi_2025_26.FitSense.domain.repository.WorkoutTracker;
 import es.udc.psi_2025_26.FitSense.domain.usecase.GetCalibrationUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.GetRoutineHistoryUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.ListCalibrationsUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.RegisterUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.ResetCalibrationUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SaveCalibrationUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.SaveWorkoutUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SignInUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SignOutUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.StartExerciseUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.WatchWorkoutUseCase;
 import es.udc.psi_2025_26.FitSense.presentation.common.TaskRunner;
+import es.udc.psi_2025_26.FitSense.sensor.ServiceWorkoutTracker;
 
 // Clase donde se crean todas las dependencias de la app (repositorios, casos de uso...)
 // Es el único sitio que conoce las implementaciones
@@ -35,6 +41,7 @@ public class AppContainer {
     private final AuthRepository mAuthRepository;
     private final RoutineRepository mRoutineRepository;
     private final CalibrationRepository mCalibrationRepository;
+    private final WorkoutTracker mWorkoutTracker;
     private final TaskRunner mTaskRunner;
 
     public AppContainer(Context context) {
@@ -43,6 +50,7 @@ public class AppContainer {
         mRoutineRepository = new RoutineRepositoryImp(FirebaseDatabase.getInstance());
         mCalibrationRepository = new CalibrationRepositoryImp(appContext.getSharedPreferences(
                 CalibrationRepositoryImp.PREFS_NAME, Context.MODE_PRIVATE));
+        mWorkoutTracker = new ServiceWorkoutTracker(appContext);
         Handler mainHandler = new Handler(Looper.getMainLooper());
         mTaskRunner = new TaskRunner(Executors.newFixedThreadPool(BACKGROUND_THREADS), mainHandler::post);
     }
@@ -79,5 +87,21 @@ public class AppContainer {
 
     public ResetCalibrationUseCase resetCalibrationUseCase() {
         return new ResetCalibrationUseCase(mAuthRepository, mCalibrationRepository);
+    }
+
+    public StartExerciseUseCase startExerciseUseCase() {
+        return new StartExerciseUseCase(getCalibrationUseCase(), mWorkoutTracker);
+    }
+
+    public WatchWorkoutUseCase watchWorkoutUseCase() {
+        return new WatchWorkoutUseCase(mWorkoutTracker);
+    }
+
+    public SaveWorkoutUseCase saveWorkoutUseCase() {
+        return new SaveWorkoutUseCase(mAuthRepository, mRoutineRepository, mWorkoutTracker);
+    }
+
+    public ListCalibrationsUseCase listCalibrationsUseCase() {
+        return new ListCalibrationsUseCase(getCalibrationUseCase(), mWorkoutTracker);
     }
 }
