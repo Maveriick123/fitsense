@@ -18,6 +18,10 @@ import androidx.lifecycle.ViewModelProvider;
 import es.udc.psi_2025_26.FitSense.databinding.ActivityCalibrationBinding;
 import es.udc.psi_2025_26.FitSense.domain.detection.CalibrationEngine;
 import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
+import es.udc.psi_2025_26.FitSense.domain.model.CapturePhase;
+import es.udc.psi_2025_26.FitSense.domain.model.CaptureState;
+import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
+import es.udc.psi_2025_26.FitSense.presentation.uimodel.ExerciseUiModelMapper;
 
 /**
  * Pantalla de autocalibración de un ejercicio.
@@ -54,9 +58,9 @@ public class CalibrationActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(CalibrationViewModel.class);
         viewModel.init(type);
 
-        String exerciseName = getString(viewModel.getType().nameRes);
+        String exerciseName = getString(ExerciseUiModelMapper.map(viewModel.getType()).nameRes);
         binding.tvCalibTitle.setText(getString(R.string.calib_title, exerciseName));
-        binding.tvCalibInstructions.setText(viewModel.getType().calibrationInstructionsRes);
+        binding.tvCalibInstructions.setText(ExerciseUiModelMapper.map(viewModel.getType()).calibrationInstructionsRes);
 
         binding.btnCalibStart.setOnClickListener(v -> startCapture());
         binding.btnCalibRetry.setOnClickListener(v -> startCapture());
@@ -156,14 +160,14 @@ public class CalibrationActivity extends AppCompatActivity {
     }
 
     private void render() {
-        CalibrationRepository.CaptureState state = viewModel.getCaptureState().getValue();
+        CaptureState state = viewModel.getCaptureState().getValue();
         CalibrationEngine.Result result = viewModel.getResult().getValue();
         if (state == null) return;
 
-        boolean idle = state.phase == CalibrationRepository.Phase.IDLE;
-        boolean capturing = state.phase == CalibrationRepository.Phase.COUNTDOWN
-                || state.phase == CalibrationRepository.Phase.RECORDING;
-        boolean finished = state.phase == CalibrationRepository.Phase.FINISHED;
+        boolean idle = state.phase == CapturePhase.IDLE;
+        boolean capturing = state.phase == CapturePhase.COUNTDOWN
+                || state.phase == CapturePhase.RECORDING;
+        boolean finished = state.phase == CapturePhase.FINISHED;
 
         binding.panelIntro.setVisibility(idle ? View.VISIBLE : View.GONE);
         binding.panelCapture.setVisibility(capturing ? View.VISIBLE : View.GONE);
@@ -171,10 +175,10 @@ public class CalibrationActivity extends AppCompatActivity {
         binding.panelResult.setVisibility(finished && result != null ? View.VISIBLE : View.GONE);
         binding.btnCalibReset.setEnabled(!capturing);
 
-        if (state.phase == CalibrationRepository.Phase.COUNTDOWN) {
+        if (state.phase == CapturePhase.COUNTDOWN) {
             binding.tvCaptureStatus.setText(getString(R.string.calib_status_countdown, state.secondsLeft));
             binding.tvCaptureHint.setText(R.string.calib_hint_countdown);
-        } else if (state.phase == CalibrationRepository.Phase.RECORDING) {
+        } else if (state.phase == CapturePhase.RECORDING) {
             binding.tvCaptureStatus.setText(getString(R.string.calib_status_recording, state.liveCount));
             binding.tvCaptureHint.setText(R.string.calib_hint_recording);
         } else if (finished && result == null) {

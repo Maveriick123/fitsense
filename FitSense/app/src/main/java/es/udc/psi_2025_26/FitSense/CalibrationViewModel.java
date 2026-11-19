@@ -17,6 +17,8 @@ import java.util.concurrent.Executors;
 import es.udc.psi_2025_26.FitSense.domain.detection.CalibrationEngine;
 import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
 import es.udc.psi_2025_26.FitSense.domain.detection.SignalRecording;
+import es.udc.psi_2025_26.FitSense.domain.model.CaptureState;
+import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
 
 /**
  * Lógica de la sesión de calibración (patrón MVVM).
@@ -66,7 +68,7 @@ public class CalibrationViewModel extends AndroidViewModel {
         return type;
     }
 
-    public LiveData<CalibrationRepository.CaptureState> getCaptureState() {
+    public LiveData<CaptureState> getCaptureState() {
         return repository.getState();
     }
 

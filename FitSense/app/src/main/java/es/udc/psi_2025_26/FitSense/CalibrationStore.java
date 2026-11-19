@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import androidx.annotation.Nullable;
 
 import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
+import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
 
 /**
  * Persistencia local de los parámetros calibrados de cada ejercicio, separada por usuario.

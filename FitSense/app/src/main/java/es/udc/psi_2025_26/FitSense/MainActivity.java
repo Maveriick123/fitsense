@@ -20,6 +20,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import es.udc.psi_2025_26.FitSense.databinding.ActivityMainBinding;
+import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
+import es.udc.psi_2025_26.FitSense.presentation.uimodel.ExerciseUiModelMapper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -102,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                 int[] counts = JumpService.getCounts();
                 for (ExerciseType type : ExerciseType.values()) {
                     if (counts[type.ordinal()] > 0) {
-                        dbManager.registrarRutina(userId, type.dbName, counts[type.ordinal()]);
+                        dbManager.registrarRutina(userId, type, counts[type.ordinal()]);
                     }
                 }
 
@@ -139,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         ExerciseType[] types = ExerciseType.values();
         String[] labels = new String[types.length];
         for (int i = 0; i < types.length; i++) {
-            String name = getString(types[i].nameRes);
+            String name = getString(ExerciseUiModelMapper.map(types[i]).nameRes);
             labels[i] = calibrationStore.isCalibrated(types[i])
                     ? getString(R.string.calib_item_calibrated, name)
                     : name;
