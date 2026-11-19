@@ -21,6 +21,7 @@ import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
 import es.udc.psi_2025_26.FitSense.domain.model.CapturePhase;
 import es.udc.psi_2025_26.FitSense.domain.model.CaptureState;
 import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
+import es.udc.psi_2025_26.FitSense.presentation.common.PermissionHelper;
 import es.udc.psi_2025_26.FitSense.presentation.uimodel.ExerciseUiModelMapper;
 import es.udc.psi_2025_26.FitSense.sensor.CalibrationRepository;
 

@@ -27,7 +27,6 @@ import androidx.core.content.ContextCompat;
 import java.util.Arrays;
 
 import es.udc.psi_2025_26.FitSense.CalibrationActivity;
-import es.udc.psi_2025_26.FitSense.MainActivity;
 import es.udc.psi_2025_26.FitSense.R;
 import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
 import es.udc.psi_2025_26.FitSense.domain.detection.ExponentialSmoother;
@@ -36,6 +35,7 @@ import es.udc.psi_2025_26.FitSense.domain.detection.RepetitionDetector;
 import es.udc.psi_2025_26.FitSense.domain.model.CapturePhase;
 import es.udc.psi_2025_26.FitSense.domain.model.CaptureState;
 import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
+import es.udc.psi_2025_26.FitSense.presentation.ui.WorkoutActivity;
 import es.udc.psi_2025_26.FitSense.presentation.uimodel.ExerciseUiModelMapper;
 
 // Servicio en primer plano que lee el acelerómetro y cuenta repeticiones
@@ -332,7 +332,7 @@ public class JumpService extends Service implements SensorEventListener {
     }
 
     private NotificationCompat.Builder createNotificationBuilder() {
-        Class<?> target = calibrating ? CalibrationActivity.class : MainActivity.class;
+        Class<?> target = calibrating ? CalibrationActivity.class : WorkoutActivity.class;
         Intent intent = new Intent(this, target);
         intent.putExtra(CalibrationActivity.EXTRA_EXERCISE_TYPE, activeExercise.name());
         // SINGLE_TOP | CLEAR_TOP: vuelve a la pantalla existente en vez de crear otra encima.

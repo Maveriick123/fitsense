@@ -15,7 +15,6 @@ import java.util.List;
 
 import es.udc.psi_2025_26.FitSense.AppContainer;
 import es.udc.psi_2025_26.FitSense.GlobalApplication;
-import es.udc.psi_2025_26.FitSense.MainActivity;
 import es.udc.psi_2025_26.FitSense.R;
 import es.udc.psi_2025_26.FitSense.databinding.ActivityRoutinesBinding;
 import es.udc.psi_2025_26.FitSense.presentation.presenter.RoutinesPresenter;
@@ -125,6 +124,6 @@ public class RoutinesActivity extends AppCompatActivity implements RoutinesView 
 
     @Override
     public void navigateToWorkout() {
-        startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, WorkoutActivity.class));
     }
 }

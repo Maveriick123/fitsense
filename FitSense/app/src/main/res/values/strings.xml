@@ -45,8 +45,6 @@
     <!-- Textos en inglés traducidos y comillas escapadas eliminadas -->
     <string name="log_out">Sesión cerrada</string>
 
-    <string name="log_rutina_completada">¡Un usuario completó %1$d de %2$s</string>
-    <string name="log_error_bd">Error al escuchar la base de datos: %1$s</string>
     <string name="notif_contando_saltos">Contando saltos: %1$d</string>
     <string name="notif_contando_flexiones">Contando flexiones: %1$d</string>
     <string name="notif_contando_pasos">Contando pasos: %1$d</string>

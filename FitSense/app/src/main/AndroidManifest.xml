@@ -35,9 +35,9 @@
             android:name=".presentation.ui.RoutinesActivity"
             android:exported="false" />
 
-        <!-- MainActivity (Tu pantalla de ejercicio) -->
+        <!-- Pantalla de entrenamiento -->
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.ui.WorkoutActivity"
             android:exported="false" />
 
         <!-- Autocalibración de los detectores -->

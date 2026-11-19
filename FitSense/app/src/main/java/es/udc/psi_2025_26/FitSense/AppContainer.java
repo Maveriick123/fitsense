@@ -18,12 +18,15 @@ import es.udc.psi_2025_26.FitSense.domain.repository.RoutineRepository;
 import es.udc.psi_2025_26.FitSense.domain.repository.WorkoutTracker;
 import es.udc.psi_2025_26.FitSense.domain.usecase.GetCalibrationUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.GetRoutineHistoryUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.ListCalibrationsUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.RegisterUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.ResetCalibrationUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SaveCalibrationUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.SaveWorkoutUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SignInUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SignOutUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.StartExerciseUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.WatchWorkoutUseCase;
 import es.udc.psi_2025_26.FitSense.presentation.common.TaskRunner;
 import es.udc.psi_2025_26.FitSense.sensor.ServiceWorkoutTracker;
 
@@ -88,5 +91,17 @@ public class AppContainer {
 
     public StartExerciseUseCase startExerciseUseCase() {
         return new StartExerciseUseCase(getCalibrationUseCase(), mWorkoutTracker);
+    }
+
+    public WatchWorkoutUseCase watchWorkoutUseCase() {
+        return new WatchWorkoutUseCase(mWorkoutTracker);
+    }
+
+    public SaveWorkoutUseCase saveWorkoutUseCase() {
+        return new SaveWorkoutUseCase(mAuthRepository, mRoutineRepository, mWorkoutTracker);
+    }
+
+    public ListCalibrationsUseCase listCalibrationsUseCase() {
+        return new ListCalibrationsUseCase(getCalibrationUseCase(), mWorkoutTracker);
     }
 }

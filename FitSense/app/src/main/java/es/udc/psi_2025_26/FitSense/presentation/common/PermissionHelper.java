@@ -1,4 +1,4 @@
-package es.udc.psi_2025_26.FitSense;
+package es.udc.psi_2025_26.FitSense.presentation.common;
 
 import android.Manifest;
 import android.content.Context;
@@ -7,13 +7,10 @@ import android.os.Build;
 
 import androidx.core.content.ContextCompat;
 
-/**
- * Comprobación de permisos compartida por MainActivity y CalibrationActivity, para que ambas
- * pantallas apliquen exactamente la misma regla antes de arrancar {@link JumpService}.
- *
- * El servicio en primer plano de tipo "health" exige ACTIVITY_RECOGNITION en Android 14+,
- * y las notificaciones necesitan POST_NOTIFICATIONS en Android 13+.
- */
+// Clase para comprobar los permisos, la usan WorkoutActivity y CalibrationActivity
+// así las dos pantallas siguen la misma regla antes de arrancar el servicio de sensores
+// El servicio de tipo "health" necesita ACTIVITY_RECOGNITION en Android 14+
+// y las notificaciones necesitan POST_NOTIFICATIONS en Android 13+
 public final class PermissionHelper {
 
     public static final String[] REQUIRED_PERMISSIONS = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
