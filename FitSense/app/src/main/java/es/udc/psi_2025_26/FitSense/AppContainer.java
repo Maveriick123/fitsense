@@ -1,9 +1,13 @@
 package es.udc.psi_2025_26.FitSense;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.concurrent.Executors;
 
 import es.udc.psi_2025_26.FitSense.data.repository.AuthRepositoryImp;
 import es.udc.psi_2025_26.FitSense.data.repository.CalibrationRepositoryImp;
@@ -18,15 +22,20 @@ import es.udc.psi_2025_26.FitSense.domain.usecase.ResetCalibrationUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SaveCalibrationUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SignInUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SignOutUseCase;
+import es.udc.psi_2025_26.FitSense.presentation.common.TaskRunner;
 
 // Clase donde se crean todas las dependencias de la app (repositorios, casos de uso...)
 // Es el único sitio que conoce las implementaciones
 // Las Activities lo piden con ((GlobalApplication) getApplication()).getContainer()
 public class AppContainer {
 
+    // Hilos para las llamadas a Firebase y para los cálculos de la calibración
+    private static final int BACKGROUND_THREADS = 2;
+
     private final AuthRepository mAuthRepository;
     private final RoutineRepository mRoutineRepository;
     private final CalibrationRepository mCalibrationRepository;
+    private final TaskRunner mTaskRunner;
 
     public AppContainer(Context context) {
         Context appContext = context.getApplicationContext();
@@ -34,6 +43,12 @@ public class AppContainer {
         mRoutineRepository = new RoutineRepositoryImp(FirebaseDatabase.getInstance());
         mCalibrationRepository = new CalibrationRepositoryImp(appContext.getSharedPreferences(
                 CalibrationRepositoryImp.PREFS_NAME, Context.MODE_PRIVATE));
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        mTaskRunner = new TaskRunner(Executors.newFixedThreadPool(BACKGROUND_THREADS), mainHandler::post);
+    }
+
+    public TaskRunner taskRunner() {
+        return mTaskRunner;
     }
 
     // Casos de uso
