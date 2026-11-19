@@ -1,4 +1,4 @@
-package es.udc.psi_2025_26.FitSense.detection;
+package es.udc.psi_2025_26.FitSense.domain.detection;
 
 /**
  * Detecta el final de una serie: el usuario ha estado activo y después permanece quieto

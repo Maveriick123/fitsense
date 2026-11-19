@@ -1,4 +1,4 @@
-package es.udc.psi_2025_26.FitSense.detection;
+package es.udc.psi_2025_26.FitSense.domain.detection;
 
 /**
  * Detector de repeticiones sobre la magnitud de la aceleración lineal.

@@ -2,8 +2,8 @@ package es.udc.psi_2025_26.FitSense;
 
 import androidx.annotation.StringRes;
 
-import es.udc.psi_2025_26.FitSense.detection.CalibrationEngine;
-import es.udc.psi_2025_26.FitSense.detection.DetectorParams;
+import es.udc.psi_2025_26.FitSense.domain.detection.CalibrationEngine;
+import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
 
 /**
  * Catálogo de ejercicios soportados.

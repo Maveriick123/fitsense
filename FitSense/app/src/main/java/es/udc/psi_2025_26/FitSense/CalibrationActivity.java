@@ -16,8 +16,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import es.udc.psi_2025_26.FitSense.databinding.ActivityCalibrationBinding;
-import es.udc.psi_2025_26.FitSense.detection.CalibrationEngine;
-import es.udc.psi_2025_26.FitSense.detection.DetectorParams;
+import es.udc.psi_2025_26.FitSense.domain.detection.CalibrationEngine;
+import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
 
 /**
  * Pantalla de autocalibración de un ejercicio.

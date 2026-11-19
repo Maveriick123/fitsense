@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import es.udc.psi_2025_26.FitSense.detection.CalibrationEngine;
-import es.udc.psi_2025_26.FitSense.detection.DetectorParams;
-import es.udc.psi_2025_26.FitSense.detection.SignalRecording;
+import es.udc.psi_2025_26.FitSense.domain.detection.CalibrationEngine;
+import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
+import es.udc.psi_2025_26.FitSense.domain.detection.SignalRecording;
 
 /**
  * Lógica de la sesión de calibración (patrón MVVM).

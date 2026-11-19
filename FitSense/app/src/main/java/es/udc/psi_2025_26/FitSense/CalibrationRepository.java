@@ -4,7 +4,7 @@ import androidx.annotation.MainThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import es.udc.psi_2025_26.FitSense.detection.SignalRecording;
+import es.udc.psi_2025_26.FitSense.domain.detection.SignalRecording;
 
 /**
  * Fuente única de verdad de la captura de calibración en curso (patrón Repository).

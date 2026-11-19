@@ -1,4 +1,4 @@
-package es.udc.psi_2025_26.FitSense.detection;
+package es.udc.psi_2025_26.FitSense.domain.detection;
 
 import java.util.Locale;
 

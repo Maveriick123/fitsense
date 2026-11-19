@@ -26,10 +26,10 @@ import androidx.core.content.ContextCompat;
 
 import java.util.Arrays;
 
-import es.udc.psi_2025_26.FitSense.detection.DetectorParams;
-import es.udc.psi_2025_26.FitSense.detection.ExponentialSmoother;
-import es.udc.psi_2025_26.FitSense.detection.QuietDetector;
-import es.udc.psi_2025_26.FitSense.detection.RepetitionDetector;
+import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
+import es.udc.psi_2025_26.FitSense.domain.detection.ExponentialSmoother;
+import es.udc.psi_2025_26.FitSense.domain.detection.QuietDetector;
+import es.udc.psi_2025_26.FitSense.domain.detection.RepetitionDetector;
 
 /**
  * Servicio en primer plano que lee el acelerómetro y cuenta repeticiones.
