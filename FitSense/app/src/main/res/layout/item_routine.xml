@@ -18,15 +18,15 @@
             android:id="@+id/tvRoutineName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="Nome Routine"
+            tools:text="@string/ex_saltos"
             android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvRoutineDifficulty"
+            android:id="@+id/tvRoutineReps"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="Difficoltà: Media"
+            tools:text="Repeticiones: 20"
             android:layout_marginTop="4dp" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>
