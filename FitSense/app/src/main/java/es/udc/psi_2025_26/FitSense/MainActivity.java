@@ -22,6 +22,7 @@ import androidx.core.view.WindowInsetsCompat;
 import es.udc.psi_2025_26.FitSense.databinding.ActivityMainBinding;
 import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
 import es.udc.psi_2025_26.FitSense.presentation.uimodel.ExerciseUiModelMapper;
+import es.udc.psi_2025_26.FitSense.sensor.JumpService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -186,9 +187,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void iniciarServicioRutina(ExerciseType tipoEjercicio) {
-        Intent serviceIntent = new Intent(this, JumpService.class);
-        serviceIntent.putExtra(JumpService.EXTRA_MODE, JumpService.MODE_WORKOUT);
-        serviceIntent.putExtra(JumpService.EXTRA_EXERCISE_TYPE, tipoEjercicio.name());
-        ContextCompat.startForegroundService(this, serviceIntent);
+        ((GlobalApplication) getApplication()).getContainer().startExerciseUseCase().execute(tipoEjercicio);
     }
 }

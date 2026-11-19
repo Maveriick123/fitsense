@@ -19,6 +19,8 @@ import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
 import es.udc.psi_2025_26.FitSense.domain.detection.SignalRecording;
 import es.udc.psi_2025_26.FitSense.domain.model.CaptureState;
 import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
+import es.udc.psi_2025_26.FitSense.sensor.CalibrationRepository;
+import es.udc.psi_2025_26.FitSense.sensor.JumpService;
 
 /**
  * Lógica de la sesión de calibración (patrón MVVM).
@@ -108,11 +110,7 @@ public class CalibrationViewModel extends AndroidViewModel {
         repository.onCountdown(JumpService.CALIBRATION_COUNTDOWN_S);
         result.setValue(null);
         DetectorParams p = trialParams.getValue();
-        Intent intent = new Intent(getApplication(), JumpService.class)
-                .putExtra(JumpService.EXTRA_MODE, JumpService.MODE_CALIBRATION)
-                .putExtra(JumpService.EXTRA_EXERCISE_TYPE, type.name())
-                .putExtra(JumpService.EXTRA_THRESHOLD, p.threshold)
-                .putExtra(JumpService.EXTRA_MIN_INTERVAL_MS, p.minIntervalMs);
+        Intent intent = JumpService.newCalibrationIntent(getApplication(), type, p);
         ContextCompat.startForegroundService(getApplication(), intent);
     }
 

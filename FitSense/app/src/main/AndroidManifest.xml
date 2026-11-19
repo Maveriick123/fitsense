@@ -49,7 +49,7 @@
 
         <!-- SERVICIO DE PABLO -->
         <service
-            android:name=".JumpService"
+            android:name=".sensor.JumpService"
             android:exported="false"
             android:foregroundServiceType="health" />
 
