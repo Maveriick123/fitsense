@@ -53,6 +53,8 @@ public class JumpService extends Service implements SensorEventListener {
 
     private static final String TAG = "_TAG_JumpService";
     private static final int NOTIFICATION_ID = 1;
+    // Canal de notificaciones, lo ve el sistema así que lleva el nombre del paquete
+    private static final String CHANNEL_ID = "es.udc.psi_2025_26.FitSense.CHANNEL_WORKOUT";
 
     // Claves para comunicarse con el servicio (las ve el sistema, llevan el nombre del paquete)
     public static final String ACTION_UPDATE_COUNT = "es.udc.psi_2025_26.FitSense.UPDATE_COUNT";
@@ -355,7 +357,7 @@ public class JumpService extends Service implements SensorEventListener {
             text = getString(ExerciseUiModelMapper.map(activeExercise).notificationRes, counts[activeExercise.ordinal()]);
         }
 
-        return new NotificationCompat.Builder(this, getString(R.string.channel_id))
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setSmallIcon(android.R.drawable.ic_menu_directions)
@@ -367,7 +369,7 @@ public class JumpService extends Service implements SensorEventListener {
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                    getString(R.string.channel_id),
+                    CHANNEL_ID,
                     getString(R.string.channel_name),
                     NotificationManager.IMPORTANCE_LOW);
             channel.setDescription(getString(R.string.channel_desc));
