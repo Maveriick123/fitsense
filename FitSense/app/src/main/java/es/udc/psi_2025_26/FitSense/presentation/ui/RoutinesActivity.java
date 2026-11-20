@@ -4,14 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
-import java.util.List;
 
 import es.udc.psi_2025_26.FitSense.AppContainer;
 import es.udc.psi_2025_26.FitSense.GlobalApplication;
@@ -40,15 +37,10 @@ public class RoutinesActivity extends AppCompatActivity implements RoutinesView 
         binding.recyclerViewRoutines.setAdapter(adapter);
 
         AppContainer container = ((GlobalApplication) getApplication()).getContainer();
-        presenter = new RoutinesPresenterImp(this, container.getRoutineHistoryUseCase(),
-                container.signOutUseCase(), container.taskRunner());
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Se recarga al volver del entrenamiento para ver la rutina que se acaba de guardar
-        presenter.onStart();
+        presenter = new RoutinesPresenterImp(this, container.watchRoutineHistoryUseCase(),
+                container.signOutUseCase());
+        // El historial se escucha en tiempo real mientras la pantalla exista
+        presenter.onCreate();
     }
 
     @Override
@@ -79,34 +71,14 @@ public class RoutinesActivity extends AppCompatActivity implements RoutinesView 
     // Métodos de RoutinesView
 
     @Override
-    public void showLoading() {
-        binding.progressRoutines.setVisibility(View.VISIBLE);
-        binding.tvRoutinesMessage.setVisibility(View.GONE);
+    public void addRoutine(RoutineUiModel routine) {
+        adapter.addRoutine(routine);
     }
 
     @Override
-    public void showRoutines(List<RoutineUiModel> routines) {
-        binding.progressRoutines.setVisibility(View.GONE);
-        binding.tvRoutinesMessage.setVisibility(View.GONE);
-        binding.recyclerViewRoutines.setVisibility(View.VISIBLE);
-        adapter.setRoutines(routines);
-    }
-
-    @Override
-    public void showNoRoutines() {
-        showMessage(R.string.routines_empty);
-    }
-
-    @Override
-    public void showError() {
-        showMessage(R.string.routines_error);
-    }
-
-    private void showMessage(int textRes) {
-        binding.progressRoutines.setVisibility(View.GONE);
-        binding.recyclerViewRoutines.setVisibility(View.GONE);
-        binding.tvRoutinesMessage.setText(textRes);
-        binding.tvRoutinesMessage.setVisibility(View.VISIBLE);
+    public void showError(String detail) {
+        Toast.makeText(this, detail == null ? getString(R.string.routines_error)
+                : getString(R.string.routines_error_detalle, detail), Toast.LENGTH_SHORT).show();
     }
 
     @Override

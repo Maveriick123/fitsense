@@ -1,19 +1,13 @@
 package es.udc.psi_2025_26.FitSense.presentation.presenter;
 
-import java.util.List;
-
 import es.udc.psi_2025_26.FitSense.presentation.uimodel.RoutineUiModel;
 
-// Estados de la pantalla del historial: cargando, lista, vacío y error
+// Interfaz con lo que sabe hacer la pantalla del historial, que se rellena en tiempo real
 public interface RoutinesView {
 
-    void showLoading();
+    void addRoutine(RoutineUiModel routine);
 
-    void showRoutines(List<RoutineUiModel> routines);
-
-    void showNoRoutines();
-
-    void showError();
+    void showError(String detail);
 
     void showLoggedOut();
 

@@ -1,53 +1,44 @@
 package es.udc.psi_2025_26.FitSense.presentation.presenter;
 
-import java.util.List;
-
-import es.udc.psi_2025_26.FitSense.domain.exception.SessionRequiredException;
+import es.udc.psi_2025_26.FitSense.domain.exception.DataUnavailableException;
 import es.udc.psi_2025_26.FitSense.domain.model.Routine;
-import es.udc.psi_2025_26.FitSense.domain.usecase.GetRoutineHistoryUseCase;
+import es.udc.psi_2025_26.FitSense.domain.repository.RoutineRepository;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SignOutUseCase;
-import es.udc.psi_2025_26.FitSense.presentation.common.TaskRunner;
+import es.udc.psi_2025_26.FitSense.domain.usecase.WatchRoutineHistoryUseCase;
 import es.udc.psi_2025_26.FitSense.presentation.uimodel.RoutineUiModelMapper;
 
-public class RoutinesPresenterImp implements RoutinesPresenter {
+// Presenter del historial. Las rutinas llegan en tiempo real (y ya en el hilo principal)
+// por eso aquí no hace falta el TaskRunner
+public class RoutinesPresenterImp implements RoutinesPresenter, RoutineRepository.Listener {
 
     private RoutinesView mView;
-    private final GetRoutineHistoryUseCase mGetRoutineHistoryUseCase;
+    private final WatchRoutineHistoryUseCase mWatchRoutineHistoryUseCase;
     private final SignOutUseCase mSignOutUseCase;
-    private final TaskRunner mTaskRunner;
 
-    public RoutinesPresenterImp(RoutinesView view, GetRoutineHistoryUseCase getRoutineHistoryUseCase,
-                                SignOutUseCase signOutUseCase, TaskRunner taskRunner) {
+    public RoutinesPresenterImp(RoutinesView view, WatchRoutineHistoryUseCase watchRoutineHistoryUseCase,
+                                SignOutUseCase signOutUseCase) {
         mView = view;
-        mGetRoutineHistoryUseCase = getRoutineHistoryUseCase;
+        mWatchRoutineHistoryUseCase = watchRoutineHistoryUseCase;
         mSignOutUseCase = signOutUseCase;
-        mTaskRunner = taskRunner;
     }
 
     @Override
-    public void onStart() {
-        mView.showLoading();
-        mTaskRunner.execute(mGetRoutineHistoryUseCase::execute, new TaskRunner.Callback<List<Routine>>() {
-            @Override
-            public void onSuccess(List<Routine> routines) {
-                if (mView == null) return;
-                if (routines.isEmpty()) {
-                    mView.showNoRoutines();
-                } else {
-                    mView.showRoutines(RoutineUiModelMapper.map(routines));
-                }
-            }
+    public void onCreate() {
+        mWatchRoutineHistoryUseCase.execute(this);
+    }
 
-            @Override
-            public void onError(Exception e) {
-                if (mView == null) return;
-                if (e instanceof SessionRequiredException) {
-                    mView.navigateToLogin();
-                } else {
-                    mView.showError();
-                }
-            }
-        });
+    @Override
+    public void onRoutineAdded(Routine routine) {
+        if (mView != null) {
+            mView.addRoutine(RoutineUiModelMapper.map(routine));
+        }
+    }
+
+    @Override
+    public void onError(DataUnavailableException e) {
+        if (mView != null) {
+            mView.showError(e.getMessage());
+        }
     }
 
     @Override
@@ -64,6 +55,7 @@ public class RoutinesPresenterImp implements RoutinesPresenter {
 
     @Override
     public void onDestroy() {
+        mWatchRoutineHistoryUseCase.execute(null);
         mView = null;
     }
 }

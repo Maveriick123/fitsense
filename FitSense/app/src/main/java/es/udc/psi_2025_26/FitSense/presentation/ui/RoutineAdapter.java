@@ -19,13 +19,10 @@ public class RoutineAdapter extends RecyclerView.Adapter<RoutineAdapter.RoutineV
 
     private final List<RoutineUiModel> mRoutines = new ArrayList<>();
 
-    // Cambia la lista que se muestra
-    public void setRoutines(List<RoutineUiModel> routines) {
-        int oldSize = mRoutines.size();
-        mRoutines.clear();
-        notifyItemRangeRemoved(0, oldSize);
-        mRoutines.addAll(routines);
-        notifyItemRangeInserted(0, routines.size());
+    // Añade una rutina al final de la lista
+    public void addRoutine(RoutineUiModel routine) {
+        mRoutines.add(routine);
+        notifyItemInserted(mRoutines.size() - 1);
     }
 
     @NonNull
@@ -58,7 +55,11 @@ public class RoutineAdapter extends RecyclerView.Adapter<RoutineAdapter.RoutineV
         // ViewHolder con lo necesario para pintar una fila
         void bind(RoutineUiModel routine) {
             Context context = itemView.getContext();
-            mBinding.tvRoutineName.setText(routine.exerciseNameRes);
+            if (routine.exerciseNameRes != 0) {
+                mBinding.tvRoutineName.setText(routine.exerciseNameRes);
+            } else {
+                mBinding.tvRoutineName.setText(routine.exerciseName);
+            }
             mBinding.tvRoutineReps.setText(
                     context.getString(R.string.routine_repetitions, routine.repetitions));
         }
