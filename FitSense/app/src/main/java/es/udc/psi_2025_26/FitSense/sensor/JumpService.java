@@ -26,7 +26,6 @@ import androidx.core.content.ContextCompat;
 
 import java.util.Arrays;
 
-import es.udc.psi_2025_26.FitSense.CalibrationActivity;
 import es.udc.psi_2025_26.FitSense.R;
 import es.udc.psi_2025_26.FitSense.domain.detection.DetectorParams;
 import es.udc.psi_2025_26.FitSense.domain.detection.ExponentialSmoother;
@@ -35,6 +34,7 @@ import es.udc.psi_2025_26.FitSense.domain.detection.RepetitionDetector;
 import es.udc.psi_2025_26.FitSense.domain.model.CapturePhase;
 import es.udc.psi_2025_26.FitSense.domain.model.CaptureState;
 import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
+import es.udc.psi_2025_26.FitSense.presentation.ui.CalibrationActivity;
 import es.udc.psi_2025_26.FitSense.presentation.ui.WorkoutActivity;
 import es.udc.psi_2025_26.FitSense.presentation.uimodel.ExerciseUiModelMapper;
 
@@ -43,7 +43,7 @@ import es.udc.psi_2025_26.FitSense.presentation.uimodel.ExerciseUiModelMapper;
 //  - ENTRENAMIENTO: cuenta las repeticiones del ejercicio activo con los parámetros que le
 //    llegan en el Intent (los decide el dominio: calibración del usuario o por defecto) y las
 //    avisa por Broadcast. Lo arranca ServiceWorkoutTracker, que implementa el puerto WorkoutTracker
-//  - CALIBRACIÓN: después de una cuenta atrás graba la señal en CalibrationRepository con unos
+//  - CALIBRACIÓN: después de una cuenta atrás graba la señal en CaptureStateHolder con unos
 //    parámetros de prueba y se para solo cuando el usuario se queda quieto
 // La calibración se hace en este mismo servicio (y no con un listener en la Activity) para que
 // se capture IGUAL que en el entrenamiento: mismo sensor, misma frecuencia, mismo filtrado y
@@ -115,7 +115,7 @@ public class JumpService extends Service implements SensorEventListener {
 
     // --- Estado interno ---
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private final CalibrationRepository repository = CalibrationRepository.getInstance();
+    private final CaptureStateHolder captureHolder = CaptureStateHolder.getInstance();
 
     private SensorManager sensorManager;
     private Sensor sensor;
@@ -199,7 +199,7 @@ public class JumpService extends Service implements SensorEventListener {
         }
         if (sensor == null) {
             Log.e(TAG, "El dispositivo no tiene acelerómetro");
-            repository.reset();
+            captureHolder.reset();
             stopSelf();
             return;
         }
@@ -220,13 +220,13 @@ public class JumpService extends Service implements SensorEventListener {
             beginRecording();
             return;
         }
-        repository.onCountdown(secondsLeft);
+        captureHolder.onCountdown(secondsLeft);
         updateNotification();
         handler.postDelayed(() -> countdownTick(secondsLeft - 1), 1000);
     }
 
     private void beginRecording() {
-        repository.onRecordingStarted();
+        captureHolder.onRecordingStarted();
         // Aviso sonoro y NO vibración: la vibración la captaría el propio acelerómetro.
         beep();
         startListening();
@@ -235,7 +235,7 @@ public class JumpService extends Service implements SensorEventListener {
 
     private void finishCalibration(long trimFromNs) {
         stopListening();
-        repository.finish(trimFromNs);
+        captureHolder.finish(trimFromNs);
         beep();
         stopSelf();
     }
@@ -244,7 +244,7 @@ public class JumpService extends Service implements SensorEventListener {
         handler.removeCallbacksAndMessages(null);
         stopListening();
         calibrating = false;
-        repository.reset();
+        captureHolder.reset();
     }
 
     // ------------------------------------------------------------------ Sensor
@@ -257,10 +257,10 @@ public class JumpService extends Service implements SensorEventListener {
         float magnitude = linearMagnitude(event);
 
         if (calibrating) {
-            if (repository.getPhase() != CapturePhase.RECORDING) return;
-            repository.onSample(timestampNs, magnitude);
+            if (captureHolder.getPhase() != CapturePhase.RECORDING) return;
+            captureHolder.onSample(timestampNs, magnitude);
             if (detector.process(timestampNs, magnitude)) {
-                repository.onRepetition(detector.getCount());
+                captureHolder.onRepetition(detector.getCount());
                 updateNotification();
             }
             long quietStart = quietDetector.process(timestampNs, magnitude);
@@ -332,9 +332,9 @@ public class JumpService extends Service implements SensorEventListener {
     }
 
     private NotificationCompat.Builder createNotificationBuilder() {
-        Class<?> target = calibrating ? CalibrationActivity.class : WorkoutActivity.class;
-        Intent intent = new Intent(this, target);
-        intent.putExtra(CalibrationActivity.EXTRA_EXERCISE_TYPE, activeExercise.name());
+        Intent intent = calibrating
+                ? CalibrationActivity.newIntent(this, activeExercise)
+                : new Intent(this, WorkoutActivity.class);
         // SINGLE_TOP | CLEAR_TOP: vuelve a la pantalla existente en vez de crear otra encima.
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -345,7 +345,7 @@ public class JumpService extends Service implements SensorEventListener {
         String exerciseName = getString(ExerciseUiModelMapper.map(activeExercise).nameRes);
         if (calibrating) {
             title = getString(R.string.notif_calib_title);
-            CaptureState s = repository.getState().getValue();
+            CaptureState s = captureHolder.getState();
             text = (s != null && s.phase == CapturePhase.COUNTDOWN)
                     ? getString(R.string.notif_calib_countdown, exerciseName, s.secondsLeft)
                     : getString(R.string.notif_calib_recording, exerciseName,
@@ -393,9 +393,9 @@ public class JumpService extends Service implements SensorEventListener {
     public void onDestroy() {
         handler.removeCallbacksAndMessages(null);
         stopListening();
-        if (calibrating && repository.isCapturing()) {
+        if (calibrating && captureHolder.isCapturing()) {
             // Detenido desde fuera (botón "Detener" o el sistema): cerramos sin recortar.
-            repository.finish(Long.MAX_VALUE);
+            captureHolder.finish(Long.MAX_VALUE);
         }
         calibrating = false;
         workoutRunning = false;
