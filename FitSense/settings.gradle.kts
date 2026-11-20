@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "FitSense"
 include(":app")
+include(":domain")
  
