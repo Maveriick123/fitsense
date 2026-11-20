@@ -13,8 +13,8 @@
   fuera del hilo principal. Los errores se traducen a `AuthException` y `DataUnavailableException`.
 - Traducción en la frontera: JSON -> `dto.RoutineDto` -> `Routine`, con `mapper.RoutineDtoMapper`
   y `mapper.ExerciseDbMapper` (nombre del ejercicio en la base de datos).
-- Mejora: el historial se consulta filtrando por usuario (`orderByChild(USER_ID).equalTo(uid)`);
-  antes se descargaban y mostraban las rutinas de todos los usuarios.
+- El historial (de todos los usuarios) se escucha en tiempo real con un `ChildEventListener`
+  (ver docs/19).
 
 ## Composición
 `GlobalApplication` + `AppContainer`: el único sitio que crea las implementaciones (composition
