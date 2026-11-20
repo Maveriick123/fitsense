@@ -4,22 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    android:layout_margin="@dimen/spacing_s"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/spacing_l">
 
         <TextView
             android:id="@+id/tvRoutineName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="@string/ex_saltos"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_large"
             android:textStyle="bold" />
 
         <TextView
@@ -27,6 +27,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Repeticiones: 20"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="@dimen/spacing_xs" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

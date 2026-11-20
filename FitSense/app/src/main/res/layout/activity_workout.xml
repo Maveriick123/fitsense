@@ -12,23 +12,23 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="@dimen/spacing_xxl">
 
         <!-- Saltos -->
         <TextView
             android:id="@+id/tv_contador_saltos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="28sp"
+            android:textSize="@dimen/text_counter"
             android:textStyle="bold"
             tools:text="Saltos: 0" />
 
         <Button
             android:id="@+id/btn_start_saltos"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="20dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_xl"
             android:text="@string/btn_start_saltos" />
 
         <!-- Flexiones -->
@@ -36,16 +36,16 @@
             android:id="@+id/tv_contador_flexiones"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="28sp"
+            android:textSize="@dimen/text_counter"
             android:textStyle="bold"
             tools:text="Flexiones: 0" />
 
         <Button
             android:id="@+id/btn_start_flexiones"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="20dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_xl"
             android:text="@string/btn_start_flexiones" />
 
         <!-- Pasos -->
@@ -53,16 +53,16 @@
             android:id="@+id/tv_contador_pasos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="28sp"
+            android:textSize="@dimen/text_counter"
             android:textStyle="bold"
             tools:text="Pasos: 0" />
 
         <Button
             android:id="@+id/btn_start_pasos"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="20dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_xl"
             android:text="@string/btn_start_pasos" />
 
         <!-- Dominadas -->
@@ -70,30 +70,30 @@
             android:id="@+id/tv_contador_dominadas"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="28sp"
+            android:textSize="@dimen/text_counter"
             android:textStyle="bold"
             tools:text="Dominadas: 0" />
 
         <Button
             android:id="@+id/btn_start_dominadas"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="32dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_xxxl"
             android:text="@string/btn_start_dominadas" />
 
         <Button
             android:id="@+id/btn_autocalibrar"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginBottom="16dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginBottom="@dimen/spacing_l"
             android:text="@string/btn_autocalibrar" />
 
         <Button
             android:id="@+id/btn_publish_rutine"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:backgroundTint="@android:color/holo_red_dark"
+            android:layout_height="@dimen/button_height_large"
+            android:backgroundTint="@color/btn_save_routine"
             android:text="@string/commit_routine_btn" />
 
     </LinearLayout>

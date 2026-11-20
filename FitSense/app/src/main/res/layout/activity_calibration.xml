@@ -11,13 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="@dimen/spacing_xxl">
 
         <TextView
             android:id="@+id/tv_calib_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="26sp"
+            android:textSize="@dimen/text_screen_title"
             android:textStyle="bold"
             tools:text="Calibrar: Flexiones" />
 
@@ -25,8 +25,8 @@
             android:id="@+id/tv_calib_params"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textSize="14sp"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:textSize="@dimen/text_small"
             tools:text="Umbral: 2.5 m/s² · Intervalo mínimo: 1400 ms (por defecto)" />
 
         <!-- 1. Instrucciones -->
@@ -34,28 +34,28 @@
             android:id="@+id/panel_intro"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/spacing_xxl"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tv_calib_instructions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="@dimen/text_body"
                 tools:text="@string/calib_instr_flexiones" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/spacing_m"
                 android:text="@string/calib_instr_general"
-                android:textSize="16sp" />
+                android:textSize="@dimen/text_body" />
 
             <Button
                 android:id="@+id/btn_calib_start"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="24dp"
+                android:layout_height="@dimen/button_height_large"
+                android:layout_marginTop="@dimen/spacing_xxl"
                 android:text="@string/calib_btn_start" />
         </LinearLayout>
 
@@ -64,7 +64,7 @@
             android:id="@+id/panel_capture"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/spacing_xxl"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -73,7 +73,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:textSize="30sp"
+                android:textSize="@dimen/text_capture_status"
                 android:textStyle="bold"
                 tools:text="Detectadas: 4" />
 
@@ -81,16 +81,16 @@
                 android:id="@+id/tv_capture_hint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/spacing_m"
                 android:gravity="center"
-                android:textSize="16sp"
+                android:textSize="@dimen/text_body"
                 tools:text="@string/calib_hint_recording" />
 
             <Button
                 android:id="@+id/btn_calib_stop"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="24dp"
+                android:layout_height="@dimen/button_height_large"
+                android:layout_marginTop="@dimen/spacing_xxl"
                 android:text="@string/calib_btn_stop" />
         </LinearLayout>
 
@@ -99,7 +99,7 @@
             android:id="@+id/panel_review"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/spacing_xxl"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -107,26 +107,26 @@
                 android:id="@+id/tv_review_detected"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_large"
                 tools:text="La app ha detectado 7 repeticiones." />
 
             <EditText
                 android:id="@+id/et_real_count"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/spacing_m"
                 android:autofillHints=""
                 android:hint="@string/calib_hint_real_count"
                 android:imeOptions="actionDone"
                 android:inputType="number"
                 android:maxLength="3"
-                android:minHeight="48dp" />
+                android:minHeight="@dimen/min_touch_target" />
 
             <Button
                 android:id="@+id/btn_calib_adjust"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="16dp"
+                android:layout_height="@dimen/button_height_large"
+                android:layout_marginTop="@dimen/spacing_l"
                 android:text="@string/calib_btn_adjust" />
 
             <Button
@@ -142,7 +142,7 @@
             android:id="@+id/panel_result"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/spacing_xxl"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -150,7 +150,7 @@
                 android:id="@+id/tv_result_summary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_large"
                 android:textStyle="bold"
                 tools:text="Ajuste correcto" />
 
@@ -158,30 +158,30 @@
                 android:id="@+id/tv_result_changes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:textSize="16sp"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:textSize="@dimen/text_body"
                 tools:text="Umbral: 2.5 → 1.8 m/s²" />
 
             <TextView
                 android:id="@+id/tv_result_robustness"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:textSize="16sp"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:textSize="@dimen/text_body"
                 tools:text="Margen amplio" />
 
             <Button
                 android:id="@+id/btn_calib_retry"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="24dp"
+                android:layout_height="@dimen/button_height_large"
+                android:layout_marginTop="@dimen/spacing_xxl"
                 android:text="@string/calib_btn_retry" />
 
             <Button
                 android:id="@+id/btn_calib_save"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="12dp"
+                android:layout_height="@dimen/button_height_large"
+                android:layout_marginTop="@dimen/spacing_m"
                 android:text="@string/calib_btn_save" />
         </LinearLayout>
 
@@ -190,7 +190,7 @@
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="@dimen/spacing_xxxl"
             android:text="@string/calib_btn_reset" />
 
     </LinearLayout>
