@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".presentation.ui.WorkoutActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_xxl">
+
+        <!-- Saltos -->
+        <TextView
+            android:id="@+id/tv_contador_saltos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_counter"
+            android:textStyle="bold"
+            tools:text="Saltos: 0" />
+
+        <Button
+            android:id="@+id/btn_start_saltos"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_xl"
+            android:text="@string/btn_start_saltos" />
+
+        <!-- Flexiones -->
+        <TextView
+            android:id="@+id/tv_contador_flexiones"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_counter"
+            android:textStyle="bold"
+            tools:text="Flexiones: 0" />
+
+        <Button
+            android:id="@+id/btn_start_flexiones"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_xl"
+            android:text="@string/btn_start_flexiones" />
+
+        <!-- Pasos -->
+        <TextView
+            android:id="@+id/tv_contador_pasos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_counter"
+            android:textStyle="bold"
+            tools:text="Pasos: 0" />
+
+        <Button
+            android:id="@+id/btn_start_pasos"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_xl"
+            android:text="@string/btn_start_pasos" />
+
+        <!-- Dominadas -->
+        <TextView
+            android:id="@+id/tv_contador_dominadas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_counter"
+            android:textStyle="bold"
+            tools:text="Dominadas: 0" />
+
+        <Button
+            android:id="@+id/btn_start_dominadas"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_xxxl"
+            android:text="@string/btn_start_dominadas" />
+
+        <Button
+            android:id="@+id/btn_autocalibrar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginBottom="@dimen/spacing_l"
+            android:text="@string/btn_autocalibrar" />
+
+        <Button
+            android:id="@+id/btn_publish_rutine"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_large"
+            android:backgroundTint="@color/btn_save_routine"
+            android:text="@string/commit_routine_btn" />
+
+    </LinearLayout>
+</ScrollView>
