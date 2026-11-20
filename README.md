@@ -31,38 +31,74 @@ Esta rama contiene el código refactorizado y ampliado:
 | Autocalibración | Ajusta la detección de cada ejercicio a partir de las repeticiones reales del usuario. Cada usuario tiene su propia calibración. |
 | Historial en la nube | Las rutinas se guardan en Firebase Realtime Database y se listan en un RecyclerView. |
 
-## 🏗️ Arquitectura de la aplicación
+## 🏗️ Arquitectura de la aplicación (Clean Architecture)
 
-- **Frontend (UI):** Activities implementadas con ViewBinding, con diseño adaptable y textos en castellano. La pantalla de calibración sigue el patrón **MVVM** (`ViewModel` + `LiveData`), así que su estado se conserva al girar el móvil.
-- **Sensores y segundo plano (Foreground Service):** `JumpService` es el único componente que lee el acelerómetro (`TYPE_LINEAR_ACCELERATION`, a unas 50 muestras por segundo). Funciona incluso con la pantalla bloqueada y tiene dos modos:
-  - **Entrenamiento:** cuenta repeticiones con la calibración del usuario que ha iniciado sesión y avisa a la
-interfaz mediante `BroadcastReceiver`.
-  - **Calibración:** graba la señal del sensor en `CalibrationRepository`, que la pantalla de calibración observa con
-`LiveData`.
-- **Detección (`detection/`):** paquete en **Java puro**, sin dependencias de Android. Contiene el detector de
-repeticiones y el motor de calibración, y eios con JUnit.
-- **Persistencia:**
-  - **Firebase Authentication** para contro.
-  - **Firebase Realtime Database** para guardar y sincronizar en tiempo real las rutinas completadas.
-  - **SharedPreferences** para guardar la csitivo, separada por usuario.
+La aplicación ha pasado de un monolito (Activities que hablaban directamente con Firebase,
+SharedPreferences y el servicio de sensores) a una **arquitectura Clean en capas**, siguiendo la
+metodología de la asignatura (diseño top-down e implementación por rebanadas verticales con
+GitFlow). Cada paso está explicado en [`docs/`](docs).
+
+```
+            ┌──────────────────────────── :app (Android) ────────────────────────────┐
+            │  presentation (MVP): ui · presenter · uimodel · common (TaskRunner)     │
+            │  sensor: JumpService · ServiceWorkoutTracker · ServiceCalibrationRecorder│
+            │  GlobalApplication + AppContainer (composition root)                    │
+            │      ┌──────────────── :data (Android library) ────────────────┐        │
+            │      │  repository (Firebase, SharedPreferences) · dto · mapper │        │
+            │      │  RepositoryFactory (única entrada pública)               │        │
+            │      │      ┌──────────── :domain (Java puro) ────────────┐     │        │
+            │      │      │ model · usecase · repository (puertos)      │     │        │
+            │      │      │ exception · detection (algoritmo)           │     │        │
+            │      │      └─────────────────────────────────────────────┘     │        │
+            │      └──────────────────────────────────────────────────────────┘        │
+            └──────────────────────────────────────────────────────────────────────────┘
+```
+
+Regla de dependencias: `:app` → `:data` → `:domain`. Al estar en módulos Gradle distintos, el
+compilador impide saltársela (no se puede importar Android en el dominio ni Firebase en `:app`).
+
+- **Dominio (`:domain`, Java puro):** entidades (`ExerciseType`, `Routine`, `Calibration`...),
+  casos de uso (una clase por acción: `SignInUseCase`, `SaveWorkoutUseCase`,
+  `AdjustCalibrationUseCase`...), puertos (`AuthRepository`, `RoutineRepository`,
+  `CalibrationRepository`, `WorkoutTracker`, `CalibrationRecorder`) y excepciones del dominio.
+  Incluye el algoritmo de detección y el motor de autocalibración.
+- **Datos (`:data`):** implementaciones de los repositorios con **Firebase Authentication**,
+  **Firebase Realtime Database** (historial por usuario) y **SharedPreferences** (calibración por
+  usuario y dispositivo, excluida de las copias de seguridad). Traducen JSON → DTO → entidad y los
+  errores a excepciones del dominio.
+- **Presentación (`:app`, MVP):** cada pantalla tiene su contrato `View` / `Presenter`; las
+  Activities son pasivas (pintan y reenvían eventos). Los Presenters llaman a los casos de uso
+  fuera del hilo principal con `TaskRunner` y preparan los datos en `UiModel`s. El Presenter de la
+  calibración se conserva en un `PresenterHolder` (ViewModel) para sobrevivir a las rotaciones.
+- **Sensores (`:app`, paquete `sensor`):** `JumpService` es el único componente que lee el
+  acelerómetro (`TYPE_LINEAR_ACCELERATION`, ~50 Hz) y funciona con la pantalla bloqueada. Recibe
+  los parámetros del detector en el Intent; `ServiceWorkoutTracker` y `ServiceCalibrationRecorder`
+  implementan los puertos del dominio sobre él.
 
 ### Estructura del código
 
 ```
-es.udc.psi_2025_26.FitSense
-├── LoginActivity / RoutinesActivity / Mainpales
-├── CalibrationActivity + CalibrationViewModel        # Pantalla de autocalibración (MVVM)
-├── JumpService                            ce de sensores
-├── ExerciseType                                      # Catálogo de ejercicios y sus valores por defecto
-├── CalibrationStore                       usuario guardada en el dispositivo
-├── CalibrationRepository                             # Estado compartido de la captura de calibración
-├── AuthManager / DatabaseManager          e
-└── detection/                                        # Algoritmo (Java puro, testeable)
-    ├── RepetitionDetector     # Filtro + hio
-    ├── ExponentialSmoother    # Filtro paso bajo
-    ├── QuietDetector          # Detecta el
-    ├── SignalRecording        # Grabación de la señal sin procesar
-    └── CalibrationEngine      # Busca los
+FitSense
+├── domain/  es.udc.psi_2025_26.FitSense.domain
+│   ├── model/        ExerciseType, Routine, WorkoutCounts, Calibration, CaptureState...
+│   ├── usecase/      Un caso de uso por acción del usuario
+│   ├── repository/   Puertos (interfaces) que implementan :data y :app
+│   ├── exception/    AuthException, DataUnavailableException...
+│   └── detection/    RepetitionDetector, ExponentialSmoother, QuietDetector,
+│                     SignalRecording, CalibrationEngine
+├── data/    es.udc.psi_2025_26.FitSense.data
+│   ├── RepositoryFactory
+│   ├── repository/   AuthRepositoryImp, RoutineRepositoryImp, CalibrationRepositoryImp
+│   ├── dto/          RoutineDto
+│   └── mapper/       RoutineDtoMapper, ExerciseDbMapper
+└── app/     es.udc.psi_2025_26.FitSense
+    ├── GlobalApplication, AppContainer
+    ├── presentation/
+    │   ├── ui/        LoginActivity, RoutinesActivity, WorkoutActivity, CalibrationActivity
+    │   ├── presenter/ Contratos View/Presenter y sus implementaciones
+    │   ├── uimodel/   UiModels y mappers
+    │   └── common/    TaskRunner, PresenterHolder, PermissionHelper
+    └── sensor/        JumpService, ServiceWorkoutTracker, ServiceCalibrationRecorder
 ```
 
 ## 📈 Algoritmo de detección

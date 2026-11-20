@@ -39,21 +39,16 @@ android {
 }
 
 dependencies {
+    implementation(project(":data"))
+
     implementation(libs.activity.ktx)
     implementation(libs.appcompat)
     implementation(libs.constraintlayout)
     implementation(libs.material)
 
-    // Import the Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
-    // TODO: Add the dependencies for Firebase products you want to use
-    // When using the BoM, don't specify versions in Firebase dependencies
-    implementation("com.google.firebase:firebase-analytics")
-    // Add the dependencies for any other desired Firebase products
-    // https://firebase.google.com/docs/android/setup#available-libraries
-
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-database")
+    // Firebase Auth y Realtime Database los usa solo el módulo :data.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
 
     testImplementation(libs.junit)
