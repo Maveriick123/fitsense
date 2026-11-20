@@ -63,7 +63,7 @@ compilador impide saltársela (no se puede importar Android en el dominio ni Fir
   `CalibrationRepository`, `WorkoutTracker`, `CalibrationRecorder`) y excepciones del dominio.
   Incluye el algoritmo de detección y el motor de autocalibración.
 - **Datos (`:data`):** implementaciones de los repositorios con **Firebase Authentication**,
-  **Firebase Realtime Database** (historial por usuario) y **SharedPreferences** (calibración por
+  **Firebase Realtime Database** (historial en tiempo real) y **SharedPreferences** (calibración por
   usuario y dispositivo, excluida de las copias de seguridad). Traducen JSON → DTO → entidad y los
   errores a excepciones del dominio.
 - **Presentación (`:app`, MVP):** cada pantalla tiene su contrato `View` / `Presenter`; las

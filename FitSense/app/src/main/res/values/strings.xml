@@ -29,8 +29,8 @@
 
     <!-- Historial de rutinas -->
     <string name="routine_repetitions">Repeticiones: %1$d</string>
-    <string name="routines_empty">Todavía no has guardado ninguna rutina</string>
-    <string name="routines_error">No se ha podido cargar el historial. Comprueba la conexión.</string>
+    <string name="routines_error">No se ha podido cargar el historial</string>
+    <string name="routines_error_detalle">Error al cargar el historial: %1$s</string>
 
     <string name="acceso_exitoso">¡Acceso exitoso!</string>
     <string name="error_inicio_sesion">Error al iniciar sesión: %1$s</string>

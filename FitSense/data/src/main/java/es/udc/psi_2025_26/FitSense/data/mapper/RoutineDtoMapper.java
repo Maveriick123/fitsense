@@ -18,12 +18,12 @@ public final class RoutineDtoMapper {
                 (long) routine.getRepetitions());
     }
 
-    // Retorna la entidad, o null si el registro está incompleto o no se conoce el ejercicio
+    // Retorna la entidad, o null si al registro le falta el ejercicio o las repeticiones
+    // Si el ejercicio no se conoce se guarda con su nombre tal cual
     public static Routine toEntity(RoutineDto dto) {
-        if (dto == null || dto.reps == null) return null;
+        if (dto == null || dto.exercise == null || dto.reps == null) return null;
         ExerciseType exercise = ExerciseDbMapper.fromDbName(dto.exercise);
-        if (exercise == null) return null;
-        return new Routine(dto.userId, exercise, dto.reps.intValue());
+        return new Routine(dto.userId, exercise, dto.exercise, dto.reps.intValue());
     }
 
     // Valores que se escriben en el nodo de la rutina

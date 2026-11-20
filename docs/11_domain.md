@@ -19,7 +19,7 @@ segundo plano) y `CalibrationRecorder` (grabar un intento de calibración).
 ## Casos de uso (`domain.usecase`)
 Una clase por acción del usuario, con las reglas de la aplicación:
 - Sesión: `SignInUseCase`, `RegisterUseCase`, `SignOutUseCase`.
-- Historial: `GetRoutineHistoryUseCase`.
+- Historial: `WatchRoutineHistoryUseCase` (en tiempo real, ver docs/19).
 - Entrenamiento: `StartExerciseUseCase`, `WatchWorkoutUseCase`, `SaveWorkoutUseCase`.
 - Calibración: `GetCalibrationUseCase`, `ListCalibrationsUseCase`, `SaveCalibrationUseCase`,
   `ResetCalibrationUseCase`, `StartCalibrationCaptureUseCase`, `StopCalibrationCaptureUseCase`,

@@ -17,7 +17,6 @@ import es.udc.psi_2025_26.FitSense.domain.usecase.AdjustCalibrationUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.CountRecordedRepetitionsUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.DiscardCalibrationCaptureUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.GetCalibrationUseCase;
-import es.udc.psi_2025_26.FitSense.domain.usecase.GetRoutineHistoryUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.LabelAttemptUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.ListCalibrationsUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.RegisterUseCase;
@@ -30,6 +29,7 @@ import es.udc.psi_2025_26.FitSense.domain.usecase.StartCalibrationCaptureUseCase
 import es.udc.psi_2025_26.FitSense.domain.usecase.StartExerciseUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.StopCalibrationCaptureUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.WatchCalibrationCaptureUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.WatchRoutineHistoryUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.WatchWorkoutUseCase;
 import es.udc.psi_2025_26.FitSense.presentation.common.TaskRunner;
 import es.udc.psi_2025_26.FitSense.presentation.presenter.CalibrationPresenter;
@@ -81,8 +81,8 @@ public class AppContainer {
         return new SignOutUseCase(mAuthRepository);
     }
 
-    public GetRoutineHistoryUseCase getRoutineHistoryUseCase() {
-        return new GetRoutineHistoryUseCase(mAuthRepository, mRoutineRepository);
+    public WatchRoutineHistoryUseCase watchRoutineHistoryUseCase() {
+        return new WatchRoutineHistoryUseCase(mRoutineRepository);
     }
 
     public GetCalibrationUseCase getCalibrationUseCase() {

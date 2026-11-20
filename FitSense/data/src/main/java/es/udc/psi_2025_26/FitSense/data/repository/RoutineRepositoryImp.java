@@ -1,15 +1,12 @@
 package es.udc.psi_2025_26.FitSense.data.repository;
 
-import com.google.android.gms.tasks.Tasks;
+import androidx.annotation.NonNull;
+
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import es.udc.psi_2025_26.FitSense.data.dto.RoutineDto;
 import es.udc.psi_2025_26.FitSense.data.mapper.RoutineDtoMapper;
@@ -18,12 +15,13 @@ import es.udc.psi_2025_26.FitSense.domain.model.Routine;
 import es.udc.psi_2025_26.FitSense.domain.repository.RoutineRepository;
 
 // Implementación del puerto RoutineRepository con Firebase Realtime Database
+// El historial se escucha en tiempo real con un ChildEventListener: Firebase manda primero
+// las rutinas que ya hay y después cada una nueva, en el hilo principal
 // JSON -> DTO -> entidad, y los errores de Firebase -> DataUnavailableException
 public class RoutineRepositoryImp implements RoutineRepository {
 
-    private static final long TIMEOUT_S = 30;
-
     private final DatabaseReference mRoutinesRef;
+    private ChildEventListener mFirebaseListener;
 
     public RoutineRepositoryImp(FirebaseDatabase database) {
         mRoutinesRef = database.getReference(RoutineDto.NODE_ROUTINES);
@@ -36,27 +34,37 @@ public class RoutineRepositoryImp implements RoutineRepository {
     }
 
     @Override
-    public List<Routine> getRoutines(String userId) throws DataUnavailableException {
-        DataSnapshot snapshot;
-        try {
-            snapshot = Tasks.await(
-                    mRoutinesRef.orderByChild(RoutineDto.KEY_USER_ID).equalTo(userId).get(),
-                    TIMEOUT_S, TimeUnit.SECONDS);
-        } catch (ExecutionException | TimeoutException e) {
-            throw new DataUnavailableException(e.getMessage(), e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new DataUnavailableException(e.getMessage(), e);
+    public void setListener(Listener listener) {
+        if (mFirebaseListener != null) {
+            mRoutinesRef.removeEventListener(mFirebaseListener);
+            mFirebaseListener = null;
         }
+        if (listener == null) return;
 
-        List<Routine> routines = new ArrayList<>();
-        for (DataSnapshot child : snapshot.getChildren()) {
-            Routine routine = RoutineDtoMapper.toEntity(toDto(child));
-            if (routine != null) {
-                routines.add(routine);
+        mFirebaseListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, String previousChildName) {
+                Routine routine = RoutineDtoMapper.toEntity(toDto(snapshot));
+                if (routine != null) {
+                    listener.onRoutineAdded(routine);
+                }
             }
-        }
-        return routines;
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, String previousChildName) {}
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {}
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, String previousChildName) {}
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                listener.onError(new DataUnavailableException(error.getMessage(), error.toException()));
+            }
+        };
+        mRoutinesRef.addChildEventListener(mFirebaseListener);
     }
 
     private static RoutineDto toDto(DataSnapshot node) {
