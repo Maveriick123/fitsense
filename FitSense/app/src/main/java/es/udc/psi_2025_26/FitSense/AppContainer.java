@@ -12,12 +12,18 @@ import java.util.concurrent.Executors;
 import es.udc.psi_2025_26.FitSense.data.repository.AuthRepositoryImp;
 import es.udc.psi_2025_26.FitSense.data.repository.CalibrationRepositoryImp;
 import es.udc.psi_2025_26.FitSense.data.repository.RoutineRepositoryImp;
+import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
 import es.udc.psi_2025_26.FitSense.domain.repository.AuthRepository;
+import es.udc.psi_2025_26.FitSense.domain.repository.CalibrationRecorder;
 import es.udc.psi_2025_26.FitSense.domain.repository.CalibrationRepository;
 import es.udc.psi_2025_26.FitSense.domain.repository.RoutineRepository;
 import es.udc.psi_2025_26.FitSense.domain.repository.WorkoutTracker;
+import es.udc.psi_2025_26.FitSense.domain.usecase.AdjustCalibrationUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.CountRecordedRepetitionsUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.DiscardCalibrationCaptureUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.GetCalibrationUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.GetRoutineHistoryUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.LabelAttemptUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.ListCalibrationsUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.RegisterUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.ResetCalibrationUseCase;
@@ -25,9 +31,15 @@ import es.udc.psi_2025_26.FitSense.domain.usecase.SaveCalibrationUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SaveWorkoutUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SignInUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.SignOutUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.StartCalibrationCaptureUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.StartExerciseUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.StopCalibrationCaptureUseCase;
+import es.udc.psi_2025_26.FitSense.domain.usecase.WatchCalibrationCaptureUseCase;
 import es.udc.psi_2025_26.FitSense.domain.usecase.WatchWorkoutUseCase;
 import es.udc.psi_2025_26.FitSense.presentation.common.TaskRunner;
+import es.udc.psi_2025_26.FitSense.presentation.presenter.CalibrationPresenter;
+import es.udc.psi_2025_26.FitSense.presentation.presenter.CalibrationPresenterImp;
+import es.udc.psi_2025_26.FitSense.sensor.ServiceCalibrationRecorder;
 import es.udc.psi_2025_26.FitSense.sensor.ServiceWorkoutTracker;
 
 // Clase donde se crean todas las dependencias de la app (repositorios, casos de uso...)
@@ -42,6 +54,7 @@ public class AppContainer {
     private final RoutineRepository mRoutineRepository;
     private final CalibrationRepository mCalibrationRepository;
     private final WorkoutTracker mWorkoutTracker;
+    private final CalibrationRecorder mCalibrationRecorder;
     private final TaskRunner mTaskRunner;
 
     public AppContainer(Context context) {
@@ -51,6 +64,7 @@ public class AppContainer {
         mCalibrationRepository = new CalibrationRepositoryImp(appContext.getSharedPreferences(
                 CalibrationRepositoryImp.PREFS_NAME, Context.MODE_PRIVATE));
         mWorkoutTracker = new ServiceWorkoutTracker(appContext);
+        mCalibrationRecorder = new ServiceCalibrationRecorder(appContext);
         Handler mainHandler = new Handler(Looper.getMainLooper());
         mTaskRunner = new TaskRunner(Executors.newFixedThreadPool(BACKGROUND_THREADS), mainHandler::post);
     }
@@ -103,5 +117,21 @@ public class AppContainer {
 
     public ListCalibrationsUseCase listCalibrationsUseCase() {
         return new ListCalibrationsUseCase(getCalibrationUseCase(), mWorkoutTracker);
+    }
+
+    // Presenters
+
+    // El presenter de la calibración se crea aquí entero porque guarda el estado de la sesión
+    public CalibrationPresenter calibrationPresenter(ExerciseType type) {
+        return new CalibrationPresenterImp(type,
+                getCalibrationUseCase(), saveCalibrationUseCase(), resetCalibrationUseCase(),
+                new StartCalibrationCaptureUseCase(mCalibrationRecorder, mWorkoutTracker),
+                new StopCalibrationCaptureUseCase(mCalibrationRecorder),
+                new DiscardCalibrationCaptureUseCase(mCalibrationRecorder),
+                new WatchCalibrationCaptureUseCase(mCalibrationRecorder),
+                new CountRecordedRepetitionsUseCase(mCalibrationRecorder),
+                new LabelAttemptUseCase(mCalibrationRecorder),
+                new AdjustCalibrationUseCase(),
+                mTaskRunner);
     }
 }

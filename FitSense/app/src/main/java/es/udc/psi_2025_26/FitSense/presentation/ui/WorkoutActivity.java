@@ -1,6 +1,5 @@
 package es.udc.psi_2025_26.FitSense.presentation.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import es.udc.psi_2025_26.FitSense.AppContainer;
-import es.udc.psi_2025_26.FitSense.CalibrationActivity;
 import es.udc.psi_2025_26.FitSense.GlobalApplication;
 import es.udc.psi_2025_26.FitSense.R;
 import es.udc.psi_2025_26.FitSense.databinding.ActivityWorkoutBinding;
@@ -144,8 +142,6 @@ public class WorkoutActivity extends AppCompatActivity implements WorkoutView {
 
     @Override
     public void navigateToCalibration(ExerciseType type) {
-        Intent intent = new Intent(this, CalibrationActivity.class);
-        intent.putExtra(CalibrationActivity.EXTRA_EXERCISE_TYPE, type.name());
-        startActivity(intent);
+        startActivity(CalibrationActivity.newIntent(this, type));
     }
 }
