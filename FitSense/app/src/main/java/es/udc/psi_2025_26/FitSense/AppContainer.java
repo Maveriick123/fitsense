@@ -4,14 +4,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.FirebaseDatabase;
-
 import java.util.concurrent.Executors;
 
-import es.udc.psi_2025_26.FitSense.data.repository.AuthRepositoryImp;
-import es.udc.psi_2025_26.FitSense.data.repository.CalibrationRepositoryImp;
-import es.udc.psi_2025_26.FitSense.data.repository.RoutineRepositoryImp;
+import es.udc.psi_2025_26.FitSense.data.RepositoryFactory;
 import es.udc.psi_2025_26.FitSense.domain.model.ExerciseType;
 import es.udc.psi_2025_26.FitSense.domain.repository.AuthRepository;
 import es.udc.psi_2025_26.FitSense.domain.repository.CalibrationRecorder;
@@ -59,10 +54,9 @@ public class AppContainer {
 
     public AppContainer(Context context) {
         Context appContext = context.getApplicationContext();
-        mAuthRepository = new AuthRepositoryImp(FirebaseAuth.getInstance());
-        mRoutineRepository = new RoutineRepositoryImp(FirebaseDatabase.getInstance());
-        mCalibrationRepository = new CalibrationRepositoryImp(appContext.getSharedPreferences(
-                CalibrationRepositoryImp.PREFS_NAME, Context.MODE_PRIVATE));
+        mAuthRepository = RepositoryFactory.createAuthRepository();
+        mRoutineRepository = RepositoryFactory.createRoutineRepository();
+        mCalibrationRepository = RepositoryFactory.createCalibrationRepository(appContext);
         mWorkoutTracker = new ServiceWorkoutTracker(appContext);
         mCalibrationRecorder = new ServiceCalibrationRecorder(appContext);
         Handler mainHandler = new Handler(Looper.getMainLooper());
