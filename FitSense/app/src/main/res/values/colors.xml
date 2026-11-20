@@ -2,4 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <!-- Botón de terminar y guardar la rutina -->
+    <color name="btn_save_routine">#FFCC0000</color>
 </resources>

@@ -17,7 +17,6 @@
     <string name="ex_pasos">Pasos</string>
     <string name="ex_dominadas">Dominadas</string>
 
-    <string name="channel_id">fitsense_channel</string>
     <string name="channel_name">Entrenamiento FitSense</string>
     <string name="channel_desc">Notificaciones activas de rutinas</string>
     <string name="notif_title">Rutina en curso</string>
@@ -37,7 +36,6 @@
     <string name="error_inicio_sesion">Error al iniciar sesión: %1$s</string>
     <string name="error_inicio_sesion_generico">No se ha podido iniciar sesión</string>
     <string name="usuario_requerido">Introduce email y contraseña</string>
-    <string name="error_general">Error: </string>
 
     <string name="error_registro">Error en el registro</string>
     <string name="error_registro_detalle">Error en el registro: %1$s</string>
